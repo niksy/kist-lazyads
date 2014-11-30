@@ -1,0 +1,83 @@
+{{> top title="Basic"}}
+
+	<button type="button" class="resize" data-dimensions="800,600">800x600</button>
+	<button type="button" class="resize" data-dimensions="600,600">600x600</button>
+	<button type="button" class="resize" data-dimensions="320,480">320x480</button>
+	<button type="button" class="resize" data-dimensions="1000,800">1000x800</button>
+	<button type="button" class="resize" data-dimensions="1200,800">1200x800</button>
+	<button type="button" class="resize" data-dimensions="1500,900">1500x900</button>
+
+	<div class="Banner" data-zone-name="billboard"></div>
+	<div class="Banner" data-zone-name="skyscraper"></div>
+	<div class="Banner" data-zone-name="floating"></div>
+	<div class="Banner" data-zone-name="wallpaper-right"></div>
+	<div class="Banner" data-zone-name="wallpaper-left"></div>
+	<div class="Banner" data-zone-name="mobile"></div>
+
+	<script>
+
+		$('.resize').on('click', function () {
+			var data = $(this).data('dimensions').split(',');
+			window.resizeTo(data[0], data[1]);
+		});
+
+		var lazyads = new $.kist.lazyads({
+			selector: '[data-zone-name]',
+			context: {
+				"screen and (min-width:1000px) and (max-width:1199px)": ["billboard","skyscraper","floating"],
+				"screen and (min-width:1500px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left"],
+				"screen and (min-width:915px) and (max-width:999px)": ["billboard","skyscraper","floating","floating"],
+				"screen and (min-width:1200px) and (max-width:1499px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left"],
+				"screen and (min-width:728px) and (max-width:914px)": ["billboard","floating"],
+				"screen and (max-width:599px)": ["mobile"]
+			},
+			content: {
+				"floating": "floating",
+				"wallpaper-left": "wallpaper-left",
+				"wallpaper-right": "wallpaper-right",
+				"billboard": "billboard",
+				"mobile": "mobile",
+				"skyscraper": "skyscraper"
+			},
+			init: function () {
+				console.log('Lazyads initialized!');
+			}
+		});
+
+		lazyads
+			.control({
+				name: 'billboard',
+				condition: function ( el ) {
+					return el.data('zone-name') === 'billboard';
+				},
+				callback: function ( el, emit ) {
+					if ( el.hasClass('is-loaded') ) {
+						if ( el.hasClass('is-hidden') ) {
+							console.log(1);
+							emit('foo');
+						}
+					}
+				}
+			})
+			.control({
+				name: 'mobile',
+				condition: function ( el ) {
+					return el.data('zone-name') === 'mobile';
+				},
+				callback: function ( el, emit ) {
+					console.log(2);
+				}
+			});
+
+		$('[data-zone-name="billboard"]').on('foo:billboard', function ( e, el ) {
+			console.log(arguments);
+		});
+
+		$(document).on('foo:billboard', function ( e, el ) {
+			console.log(e.currentTarget);
+			console.log(e.target);
+		});
+
+	</script>
+
+{{> bottom}}

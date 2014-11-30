@@ -1,0 +1,39 @@
+{
+  "name": "kist-lazyads",
+  "version": "0.0.0",
+  "description": "Simple ads/banners async loading manager.",
+  "authors": [
+    "Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/)"
+  ],
+  "license": "MIT",
+  "main": "dist/kist-lazyads.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "src",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "jquery": ">=1",
+    "media-match": "niksy/media-match#~2.0.3"
+  },
+  "devDependencies": {
+    "jquery": "1"
+  },
+  "homepage": "https://github.com/niksy/kist-lazyads",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "banners",
+    "ads",
+    "async",
+    "lazyload",
+    "browserify"
+  ]
+}
