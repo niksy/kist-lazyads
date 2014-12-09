@@ -1,7 +1,7 @@
 {
   "name": "kist-lazyads",
   "version": "0.1.1",
-  "description": "Simple ads/banners async loading manager.",
+  "description": "Simple ads manager.",
   "author": "Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/)",
   "license": "MIT",
   "main": "index.js",
