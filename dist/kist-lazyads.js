@@ -1,4 +1,4 @@
-/*! kist-lazyads 0.1.0 - Simple ads/banners async loading manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
+/*! kist-lazyads 0.1.1 - Simple ads/banners async loading manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
@@ -28,24 +28,21 @@ var Lazyads = module.exports = function ( options ) {
 		$.error('window.matchMedia undefined.');
 	}
 
-	this.banners = new Banners($(this.options.selector), this.options);
+	this.banners = new Banners($(this.options.el), this.options);
 	this.context = new Context(this.banners, this.options.context);
 
 	this.options.init.call(this);
 
 };
 
-/**
- * @type {Object}
- */
 Lazyads.prototype.defaults = {
-	selector: '',
+	el: '[data-ad-id]',
 	context: {},
 	content: {},
 	init: $.noop,
-	contentIdDataProp: 'zone-name',
+	contentIdDataProp: 'ad-id',
 	classes: {
-		banner: meta.ns.htmlClass + '-item',
+		el: meta.ns.htmlClass + '-item',
 		isLoaded: 'is-loaded',
 		isHidden: 'is-hidden'
 	}
@@ -61,6 +58,9 @@ Lazyads.prototype.control = function ( props ) {
 	return this;
 };
 
+/**
+ * @return {Lazyads}
+ */
 Lazyads.prototype.destroy = function () {
 	this.banners.destroy();
 	this.context.destroy();
@@ -1281,7 +1281,7 @@ var meta = require(12);
  * @return {jQuery}
  */
 function resolveByName ( name, index, el ) {
-	return $(el).data(this.idProp) === name;
+	return $(el).data(this.contentIdDataProp) === name;
 }
 
 /**
@@ -1315,14 +1315,14 @@ function success ( el ) {
  */
 var Banners = module.exports = function ( el, options ) {
 
-	this.$el     = el;
-	this.idProp  = options.contentIdDataProp;
-	this.content = options.content;
-	this.classes = options.classes;
-	this.list    = getBannersFromContexts(options.context);
-	this.control = new Control();
+	this.$el               = el;
+	this.contentIdDataProp = options.contentIdDataProp;
+	this.content           = options.content;
+	this.classes           = options.classes;
+	this.list              = getBannersFromContexts(options.context);
+	this.control           = new Control();
 
-	this.$el.addClass(this.classes.banner);
+	this.$el.addClass(this.classes.el);
 
 };
 
@@ -1387,7 +1387,7 @@ Banners.prototype.populate = function ( arr ) {
  */
 Banners.prototype.write = function ( el ) {
 
-	var content = this.content[el.data(this.idProp)];
+	var content = this.content[el.data(this.contentIdDataProp)];
 
 	// If zone content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
@@ -1541,7 +1541,6 @@ Context.prototype.destroy = function () {
 },{}],11:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var waitForLayout = require(13);
 
 /**
  * @param  {jQuery} el
@@ -1556,6 +1555,24 @@ function emit ( el, controlName ) {
 	 */
 	return function ( eventName ) {
 		el.trigger(eventName + ':' + controlName, [el]);
+	};
+}
+
+/**
+ * @param  {Object} ctx
+ *
+ * @return {Function}
+ */
+function waitForLayout ( ctx ) {
+
+	/**
+	 * Some banners report incorrect size so we have to take render time difference.
+	 *
+	 * @param  {Function} cb
+	 * @param  {Number} pTimeout
+	 */
+	return function ( cb, timeout ) {
+		setTimeout($.proxy(cb, ctx), timeout || 300);
 	};
 }
 
@@ -1616,7 +1633,7 @@ Control.prototype.resolve = function ( el ) {
 
 		$.each(arr, $.proxy(function ( index, val ) {
 			if ( Boolean(val.condition.call(this, item)) ) {
-				val.callback.call(this, item, emit(item, val.name), waitForLayout);
+				val.callback.call(this, item, emit(item, val.name), waitForLayout(this));
 			}
 		}, this));
 
@@ -1636,22 +1653,6 @@ module.exports = {
 		htmlClass: 'kist-Lazyads'
 	}
 };
-
-},{}],13:[function(require,module,exports){
-/**
- * Some banners report incorrect size so we have to take render time difference.
- *
- * @todo This should be more flexible - consider calculating DOM elements
- *       dimensions (width, height, spacing)
- *
- * @param  {Function} cb
- * @param  {Number} pTimeout
- */
-function waitForLayout ( cb, timeout ) {
-	setTimeout(cb, timeout || 300);
-}
-
-module.exports = waitForLayout;
 
 },{}]},{},[1])(1)
 });
