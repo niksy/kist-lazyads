@@ -1,7 +1,7 @@
 var lazyads = require('kist-lazyads');
 
 lazyads({
-	selector: '[data-zone-name]',
+	el: '[data-ad-id]',
 	context: {
 		"screen and (min-width:1000px) and (max-width:1199px)": ["billboard","skyscraper","floating"],
 		"screen and (min-width:1500px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left"],

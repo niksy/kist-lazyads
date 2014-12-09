@@ -25,24 +25,21 @@ var Lazyads = module.exports = function ( options ) {
 		$.error('window.matchMedia undefined.');
 	}
 
-	this.banners = new Banners($(this.options.selector), this.options);
+	this.banners = new Banners($(this.options.el), this.options);
 	this.context = new Context(this.banners, this.options.context);
 
 	this.options.init.call(this);
 
 };
 
-/**
- * @type {Object}
- */
 Lazyads.prototype.defaults = {
-	selector: '',
+	el: '[data-ad-id]',
 	context: {},
 	content: {},
 	init: $.noop,
-	contentIdDataProp: 'zone-name',
+	contentIdDataProp: 'ad-id',
 	classes: {
-		banner: meta.ns.htmlClass + '-item',
+		el: meta.ns.htmlClass + '-item',
 		isLoaded: 'is-loaded',
 		isHidden: 'is-hidden'
 	}
@@ -58,6 +55,9 @@ Lazyads.prototype.control = function ( props ) {
 	return this;
 };
 
+/**
+ * @return {Lazyads}
+ */
 Lazyads.prototype.destroy = function () {
 	this.banners.destroy();
 	this.context.destroy();

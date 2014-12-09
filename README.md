@@ -1,6 +1,6 @@
 # kist-lazyads
 
-Simple ads/banners manager. Provides async control via [Postscribe](https://github.com/krux/postscribe).
+Simple ads manager. Provides async control with [Postscribe](https://github.com/krux/postscribe).
 
 ## Installation
 
@@ -16,13 +16,13 @@ bower install kist-lazyads --save
 
 Type: `Function`
 
-Constructor for module. Available options are:
+Module class. Available options are:
 
-#### selector
+#### el
 
-Type: `String`
+Type: `String|jQuery|Element`
 
-CSS selector for element which will contain ad content.
+Element which will contain ad content. String should be valid CSS selector.
 
 #### context
 
@@ -45,7 +45,7 @@ List of contexts and their zones.
 
 Type: `Object`
 
-Ad content which will be injected inside document elements defined by `selector` and `contentIdDataProp` properties.
+Ad content which will be injected inside document elements defined by `el` and `contentIdDataProp` properties.
 
 ```js
 {
@@ -66,18 +66,18 @@ Callback to run on initialization.
 
 Type: `String`
 
-`data` property which will be used to hook with banner content.
+`data` property which will be used to hook with ad content.
 
-This will inject `zone1` content inside element with `data-zone-name="zone1"`
+This will inject `zone1` content inside element with `data-ad-id="zone1"`
 
 ```js
 {
-	contentIdDataProp: 'zone-name'
+	contentIdDataProp: 'ad-id'
 }
 ```
 
 ```html
-<div data-zone-name="zone1"></div>
+<div data-ad-id="zone1"></div>
 ```
 
 #### classes
@@ -88,7 +88,7 @@ HTML clasess for DOM elements.
 
 ```js
 {
-	banner: 'kist-Lazyads-banner',
+	el: 'kist-Lazyads-item',
 	isLoaded: 'is-loaded',
 	isHidden: 'is-hidden'
 }
@@ -96,10 +96,10 @@ HTML clasess for DOM elements.
 
 ### `.control(options)`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
-Provides individual control of ads/banners based on specific conditions. Available options are:
+Provides individual control of ads based on specific conditions. Available options are:
 
 #### name
 
@@ -109,14 +109,14 @@ Name of control. Options with same name will be merged.
 
 #### condition
 
-Type: `Function`
+Type: `Function`  
 Arguments: [jQuery object]
 
 Condition on which this controls `callback` method will be run.
 
 #### callback
 
-Type: `Function`
+Type: `Function`  
 Arguments: [`el`, `emit`, `waitForLayout`]
 
 Callback to run when condition is true.
@@ -125,25 +125,25 @@ Callback to run when condition is true.
 
 Type: `jQuery`
 
-Ad/banner element on which callback was run.
+Ad element on which callback was run.
 
 ##### emit
 
-Type: `Function`
+Type: `Function`  
 Arguments: [Event to emit]
 
-Event emit method accepts one argument. Emitted event has form of `[Provided argument]:[Control name]` and is triggered on corresponding ad/banner element.
+Event emit method accepts one argument. Emitted event has form of `[Provided argument]:[Control name]` and is triggered on corresponding ad element.
 
 ##### waitForLayout
 
-Type: `Function`
+Type: `Function`  
 Arguments: [`cb`, `timeout`]
 
 Alias for `setTimeout`. Default timeout is `300`.
 
 ### `.destroy`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Destroys current Lazyads instance.
@@ -154,7 +154,7 @@ Destroys current Lazyads instance.
 var lazyads = require('kist-lazyads');
 
 var ads = new lazyads({
-	selector: '.Banner',
+	el: '.Banner',
 	context: {
 		"screen and (min-width:1000px) and (max-width:1199px)": ["zone1","zone2","zone3"],
 		"screen and (min-width:1500px)": ["zone1","zone2","zone3"],
@@ -178,7 +178,7 @@ ads
 	.control({
 		name: 'zone1',
 		condition: function ( el ) {
-			return el.data('zone-name') === 'zone1';
+			return el.data('ad-id') === 'zone1';
 		},
 		callback: function ( el, emit, wait ) {
 			if ( el.hasClass('is-loaded') ) {
@@ -192,14 +192,14 @@ ads
 	.control({
 		name: 'zone4',
 		condition: function ( el ) {
-			return el.data('zone-name') === 'zone4';
+			return el.data('ad-id') === 'zone4';
 		},
 		callback: function ( el, emit, wait ) {
 			console.log(2);
 		}
 	});
 
-$('[data-zone-name="zone1"]').on('foo:zone1', function ( e, el ) {
+$('[data-ad-id="zone1"]').on('foo:zone1', function ( e, el ) {
 	console.log(arguments);
 });
 
@@ -210,10 +210,10 @@ $(document).on('foo:zone1', function ( e, el ) {
 ```
 
 ```html
-<data class="Banner" data-zone-name="zone1"></div>
-<data class="Banner" data-zone-name="zone2"></div>
-<data class="Banner" data-zone-name="zone3"></div>
-<data class="Banner" data-zone-name="zone4"></div>
+<data class="Banner" data-ad-id="zone1"></div>
+<data class="Banner" data-ad-id="zone2"></div>
+<data class="Banner" data-ad-id="zone3"></div>
+<data class="Banner" data-ad-id="zone4"></div>
 ```
 
 ### AMD and global
@@ -223,6 +223,10 @@ define(['kist-lazyads'], cb);
 
 window.$.kist.lazyads;
 ```
+
+## Browser support
+
+Tested in IE8+ and all modern browsers.
 
 ## License
 

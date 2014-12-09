@@ -7,12 +7,12 @@
 	<button type="button" class="resize" data-dimensions="1200,800">1200x800</button>
 	<button type="button" class="resize" data-dimensions="1500,900">1500x900</button>
 
-	<div class="Banner" data-zone-name="billboard"></div>
-	<div class="Banner" data-zone-name="skyscraper"></div>
-	<div class="Banner" data-zone-name="floating"></div>
-	<div class="Banner" data-zone-name="wallpaper-right"></div>
-	<div class="Banner" data-zone-name="wallpaper-left"></div>
-	<div class="Banner" data-zone-name="mobile"></div>
+	<div class="Banner" data-ad-id="billboard"></div>
+	<div class="Banner" data-ad-id="skyscraper"></div>
+	<div class="Banner" data-ad-id="floating"></div>
+	<div class="Banner" data-ad-id="wallpaper-right"></div>
+	<div class="Banner" data-ad-id="wallpaper-left"></div>
+	<div class="Banner" data-ad-id="mobile"></div>
 
 	<script>
 
@@ -22,7 +22,7 @@
 		});
 
 		var lazyads = new $.kist.lazyads({
-			selector: '[data-zone-name]',
+			el: '[data-ad-id]',
 			context: {
 				"screen and (min-width:1000px) and (max-width:1199px)": ["billboard","skyscraper","floating"],
 				"screen and (min-width:1500px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left"],
@@ -48,7 +48,7 @@
 			.control({
 				name: 'billboard',
 				condition: function ( el ) {
-					return el.data('zone-name') === 'billboard';
+					return el.data('ad-id') === 'billboard';
 				},
 				callback: function ( el, emit ) {
 					if ( el.hasClass('is-loaded') ) {
@@ -62,14 +62,14 @@
 			.control({
 				name: 'mobile',
 				condition: function ( el ) {
-					return el.data('zone-name') === 'mobile';
+					return el.data('ad-id') === 'mobile';
 				},
-				callback: function ( el, emit ) {
+				callback: function ( el, emit, wait ) {
 					console.log(2);
 				}
 			});
 
-		$('[data-zone-name="billboard"]').on('foo:billboard', function ( e, el ) {
+		$('[data-ad-id="billboard"]').on('foo:billboard', function ( e, el ) {
 			console.log(arguments);
 		});
 

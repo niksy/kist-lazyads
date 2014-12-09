@@ -14,7 +14,7 @@ var meta = require('./meta');
  * @return {jQuery}
  */
 function resolveByName ( name, index, el ) {
-	return $(el).data(this.idProp) === name;
+	return $(el).data(this.contentIdDataProp) === name;
 }
 
 /**
@@ -48,14 +48,14 @@ function success ( el ) {
  */
 var Banners = module.exports = function ( el, options ) {
 
-	this.$el     = el;
-	this.idProp  = options.contentIdDataProp;
-	this.content = options.content;
-	this.classes = options.classes;
-	this.list    = getBannersFromContexts(options.context);
-	this.control = new Control();
+	this.$el               = el;
+	this.contentIdDataProp = options.contentIdDataProp;
+	this.content           = options.content;
+	this.classes           = options.classes;
+	this.list              = getBannersFromContexts(options.context);
+	this.control           = new Control();
 
-	this.$el.addClass(this.classes.banner);
+	this.$el.addClass(this.classes.el);
 
 };
 
@@ -120,7 +120,7 @@ Banners.prototype.populate = function ( arr ) {
  */
 Banners.prototype.write = function ( el ) {
 
-	var content = this.content[el.data(this.idProp)];
+	var content = this.content[el.data(this.contentIdDataProp)];
 
 	// If zone content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it

@@ -1,5 +1,4 @@
 var $ = require('jquery');
-var waitForLayout = require('./util/wait-for-layout');
 
 /**
  * @param  {jQuery} el
@@ -14,6 +13,24 @@ function emit ( el, controlName ) {
 	 */
 	return function ( eventName ) {
 		el.trigger(eventName + ':' + controlName, [el]);
+	};
+}
+
+/**
+ * @param  {Object} ctx
+ *
+ * @return {Function}
+ */
+function waitForLayout ( ctx ) {
+
+	/**
+	 * Some banners report incorrect size so we have to take render time difference.
+	 *
+	 * @param  {Function} cb
+	 * @param  {Number} pTimeout
+	 */
+	return function ( cb, timeout ) {
+		setTimeout($.proxy(cb, ctx), timeout || 300);
 	};
 }
 
@@ -74,7 +91,7 @@ Control.prototype.resolve = function ( el ) {
 
 		$.each(arr, $.proxy(function ( index, val ) {
 			if ( Boolean(val.condition.call(this, item)) ) {
-				val.callback.call(this, item, emit(item, val.name), waitForLayout);
+				val.callback.call(this, item, emit(item, val.name), waitForLayout(this));
 			}
 		}, this));
 
