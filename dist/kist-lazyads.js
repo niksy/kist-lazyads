@@ -1,14 +1,11 @@
-/*! kist-lazyads 0.0.0 - Simple ads/banners async loading manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
+/*! kist-lazyads 0.1.0 - Simple ads/banners async loading manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
-/* jshint latedef:false */
-
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 var empty = require(6);
-var meta = require(13);
-var Banners = require(10);
-var Context = require(11);
-var err = require(7)(meta.name);
+var meta = require(12);
+var Banners = require(9);
+var Context = require(10);
 
 /**
  * @class
@@ -17,7 +14,8 @@ var err = require(7)(meta.name);
  */
 var Lazyads = module.exports = function ( options ) {
 
-	this.options = $.extend(true, {}, this.defaults, options);
+	this.options         = $.extend({}, this.defaults, options);
+	this.options.classes = $.extend({}, this.defaults.classes, options.classes);
 
 	// If we don’t have banner content object or we don’t display banners
 	// (e.g. we are in maintenance mode), don’t do anything with banner system
@@ -27,7 +25,7 @@ var Lazyads = module.exports = function ( options ) {
 
 	// Don’t do anything if we don’t have `matchMedia`
 	if ( !('matchMedia' in global) ) {
-		err('window.matchMedia undefined.');
+		$.error('window.matchMedia undefined.');
 	}
 
 	this.banners = new Banners($(this.options.selector), this.options);
@@ -47,7 +45,7 @@ Lazyads.prototype.defaults = {
 	init: $.noop,
 	contentIdDataProp: 'zone-name',
 	classes: {
-		banner: meta.ns.htmlClass + '-banner',
+		banner: meta.ns.htmlClass + '-item',
 		isLoaded: 'is-loaded',
 		isHidden: 'is-hidden'
 	}
@@ -185,25 +183,6 @@ function isEmpty (val) {
   return true;
 }
 },{}],7:[function(require,module,exports){
-/**
- * @param  {String} name
- *
- * @return {Function}
- */
-module.exports = function ( name ) {
-
-	/**
-	 * @param  {String} message
-	 *
-	 * @return {Error}
-	 */
-	return function ( message ) {
-		throw new Error(name + ': ' + message);
-	};
-
-};
-
-},{}],8:[function(require,module,exports){
 (function (global){
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -575,10 +554,10 @@ module.exports = function ( name ) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(8);
+; htmlParser = global.htmlParser = require(7);
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
@@ -1284,13 +1263,13 @@ module.exports = function ( name ) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var postscribe = require(9);
+var postscribe = require(8);
 var unique = require(4);
-var Control = require(12);
-var meta = require(13);
+var Control = require(11);
+var meta = require(12);
 
 /**
  * @this   {Banners}
@@ -1442,7 +1421,7 @@ Banners.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 var difference = require(2);
@@ -1559,10 +1538,10 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var waitForLayout = require(14);
+var waitForLayout = require(13);
 
 /**
  * @param  {jQuery} el
@@ -1650,7 +1629,7 @@ Control.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = {
 	name: 'lazyads',
 	ns: {
@@ -1658,7 +1637,7 @@ module.exports = {
 	}
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * Some banners report incorrect size so we have to take render time difference.
  *
