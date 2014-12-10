@@ -1,11 +1,26 @@
-/*! kist-lazyads 0.1.2 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
+/*! kist-lazyads 0.1.3 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var empty = require(6);
-var meta = require(12);
-var Banners = require(9);
-var Context = require(10);
+var meta = require(11);
+var Banners = require(8);
+var Context = require(9);
+
+/**
+ *
+ * If content object is empty, we don’t display ads, have
+ * ad blocker activated, etc., don’t do anything with ad system
+ *
+ * @param  {Object}  options
+ *
+ * @return {Boolean}
+ */
+function hasNecessaryData ( options ) {
+	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
+		return false;
+	}
+	return true;
+}
 
 /**
  * @class
@@ -17,13 +32,10 @@ var Lazyads = module.exports = function ( options ) {
 	this.options         = $.extend({}, this.defaults, options);
 	this.options.classes = $.extend({}, this.defaults.classes, options.classes);
 
-	// If we don’t have banner content object or we don’t display banners
-	// (e.g. we are in maintenance mode), don’t do anything with banner system
-	if ( empty(this.options.content) || empty(this.options.context) ) {
-		return;
+	if ( !hasNecessaryData(this.options) ) {
+		return this;
 	}
 
-	// Don’t do anything if we don’t have `matchMedia`
 	if ( !('matchMedia' in global) ) {
 		$.error('window.matchMedia undefined.');
 	}
@@ -31,7 +43,7 @@ var Lazyads = module.exports = function ( options ) {
 	this.banners = new Banners($(this.options.el), this.options);
 	this.context = new Context(this.banners, this.options.context);
 
-	this.options.init.call(this);
+	this.options.init();
 
 };
 
@@ -54,7 +66,9 @@ Lazyads.prototype.defaults = {
  * @return {Lazyads}
  */
 Lazyads.prototype.control = function ( props ) {
-	this.banners.control.add(props);
+	if ( hasNecessaryData(this.options) ) {
+		this.banners.control.add(props);
+	}
 	return this;
 };
 
@@ -62,10 +76,12 @@ Lazyads.prototype.control = function ( props ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.destroy = function () {
-	this.banners.destroy();
-	this.context.destroy();
-	this.banners = null;
-	this.context = null;
+	if ( hasNecessaryData(this.options) ) {
+		this.banners.destroy();
+		this.context.destroy();
+		this.banners = null;
+		this.context = null;
+	}
 	return this;
 };
 
@@ -153,36 +169,6 @@ module.exports = function (arr) {
 },{}],5:[function(require,module,exports){
 module.exports=require(3)
 },{}],6:[function(require,module,exports){
-
-/**
- * Expose `isEmpty`.
- */
-
-module.exports = isEmpty;
-
-
-/**
- * Has.
- */
-
-var has = Object.prototype.hasOwnProperty;
-
-
-/**
- * Test whether a value is "empty".
- *
- * @param {Mixed} val
- * @return {Boolean}
- */
-
-function isEmpty (val) {
-  if (null == val) return true;
-  if ('number' == typeof val) return 0 === val;
-  if (undefined !== val.length) return 0 === val.length;
-  for (var key in val) if (has.call(val, key)) return false;
-  return true;
-}
-},{}],7:[function(require,module,exports){
 (function (global){
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -554,10 +540,10 @@ function isEmpty (val) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(7);
+; htmlParser = global.htmlParser = require(6);
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
@@ -1263,13 +1249,13 @@ function isEmpty (val) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var postscribe = require(8);
+var postscribe = require(7);
 var unique = require(4);
-var Control = require(11);
-var meta = require(12);
+var Control = require(10);
+var meta = require(11);
 
 /**
  * @this   {Banners}
@@ -1421,7 +1407,7 @@ Banners.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 var difference = require(2);
@@ -1538,7 +1524,7 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 
@@ -1646,7 +1632,7 @@ Control.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = {
 	name: 'lazyads',
 	ns: {
