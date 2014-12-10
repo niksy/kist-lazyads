@@ -1,8 +1,23 @@
 var $ = require('jquery');
-var empty = require('is-empty');
 var meta = require('./src/meta');
 var Banners = require('./src/banners');
 var Context = require('./src/context');
+
+/**
+ *
+ * If content object is empty, we don’t display ads, have
+ * ad blocker activated, etc., don’t do anything with ad system
+ *
+ * @param  {Object}  options
+ *
+ * @return {Boolean}
+ */
+function hasNecessaryData ( options ) {
+	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
+		return false;
+	}
+	return true;
+}
 
 /**
  * @class
@@ -14,13 +29,10 @@ var Lazyads = module.exports = function ( options ) {
 	this.options         = $.extend({}, this.defaults, options);
 	this.options.classes = $.extend({}, this.defaults.classes, options.classes);
 
-	// If we don’t have banner content object or we don’t display banners
-	// (e.g. we are in maintenance mode), don’t do anything with banner system
-	if ( empty(this.options.content) || empty(this.options.context) ) {
-		return;
+	if ( !hasNecessaryData(this.options) ) {
+		return this;
 	}
 
-	// Don’t do anything if we don’t have `matchMedia`
 	if ( !('matchMedia' in global) ) {
 		$.error('window.matchMedia undefined.');
 	}
@@ -28,7 +40,7 @@ var Lazyads = module.exports = function ( options ) {
 	this.banners = new Banners($(this.options.el), this.options);
 	this.context = new Context(this.banners, this.options.context);
 
-	this.options.init.call(this);
+	this.options.init();
 
 };
 
@@ -51,7 +63,9 @@ Lazyads.prototype.defaults = {
  * @return {Lazyads}
  */
 Lazyads.prototype.control = function ( props ) {
-	this.banners.control.add(props);
+	if ( hasNecessaryData(this.options) ) {
+		this.banners.control.add(props);
+	}
 	return this;
 };
 
@@ -59,9 +73,11 @@ Lazyads.prototype.control = function ( props ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.destroy = function () {
-	this.banners.destroy();
-	this.context.destroy();
-	this.banners = null;
-	this.context = null;
+	if ( hasNecessaryData(this.options) ) {
+		this.banners.destroy();
+		this.context.destroy();
+		this.banners = null;
+		this.context = null;
+	}
 	return this;
 };
