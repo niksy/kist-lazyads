@@ -1,5 +1,5 @@
 var assert = require('assert');
-var Control = require('../../src/control');
+var Control = require('../../lib/control');
 
 describe('', function () {
 
