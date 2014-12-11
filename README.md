@@ -56,17 +56,11 @@ Ad content which will be injected inside document elements defined by `el` and `
 }
 ```
 
-#### init
-
-Type: `Function`
-
-Callback to run on initialization.
-
 #### contentIdDataProp
 
 Type: `String`
 
-`data` property which will be used to hook with ad content.
+`data` property which will be used to connect with ad content.
 
 This will inject `zone1` content inside element with `data-ad-id="zone1"`
 
@@ -94,6 +88,13 @@ HTML clasess for DOM elements.
 }
 ```
 
+### `.init(cb)`
+
+Type: `Function`  
+Returns: `Lazyads`
+
+Initializes ad manager. **This method must be called**, either after setting up control, or after creating instance.
+
 ### `.control(options)`
 
 Type: `Function`  
@@ -110,38 +111,26 @@ Name of control. Options with same name will be merged.
 #### condition
 
 Type: `Function`  
-Arguments: [jQuery object]
 
-Condition on which this controls `callback` method will be run.
+Condition on which `callback` method of current control will be run.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `el` | `jQuery` | Current ad element which fullfils condition. |
 
 #### callback
 
-Type: `Function`  
-Arguments: [`el`, `emit`, `waitForLayout`]
+Type: `Function`
 
 Callback to run when condition is true.
 
-##### el
+| Argument | Type | Description |
+| --- | --- | --- |
+| `el` | `jQuery` | Current ad element which fullfils condition. |
+| `emit` | `Function` | Accepts one argument: name of event to emit. Emitted event has form of `{Provided argument}:{Control name}` and is triggered on corresponding ad element. |
+| `waitForLayout` | `Function` | Alias for `setTimeout`. Default timeout is `300`. |
 
-Type: `jQuery`
-
-Ad element on which callback was run.
-
-##### emit
-
-Type: `Function`  
-Arguments: [Event to emit]
-
-Event emit method accepts one argument. Emitted event has form of `[Provided argument]:[Control name]` and is triggered on corresponding ad element.
-
-##### waitForLayout
-
-Type: `Function`  
-Arguments: [`cb`, `timeout`]
-
-Alias for `setTimeout`. Default timeout is `300`.
-
-### `.destroy`
+### `.destroy()`
 
 Type: `Function`  
 Returns: `Lazyads`
@@ -168,9 +157,6 @@ var ads = new lazyads({
 		"zone2": "<span>zone2 content</span>",
 		"zone3": "zone3 content",
 		"zone4": "zone4 content"
-	},
-	init: function () {
-		console.log('Lazyads initialized!');
 	}
 });
 
@@ -197,6 +183,9 @@ ads
 		callback: function ( el, emit, wait ) {
 			console.log(2);
 		}
+	})
+	.init(function () {
+		console.log('Lazyads initialized!');
 	});
 
 $('[data-ad-id="zone1"]').on('foo:zone1', function ( e, el ) {
