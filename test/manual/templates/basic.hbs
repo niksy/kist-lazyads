@@ -57,6 +57,19 @@
 				}
 			})
 			.control({
+				name: 'skyscraper',
+				condition: function ( el ) {
+					return el.data('ad-id') === 'skyscraper';
+				},
+				callback: function ( el, emit ) {
+					if ( el.hasClass('is-loaded') ) {
+						if ( el.hasClass('is-hidden') ) {
+							console.log(3);
+						}
+					}
+				}
+			})
+			.control({
 				name: 'mobile',
 				condition: function ( el ) {
 					return el.data('ad-id') === 'mobile';

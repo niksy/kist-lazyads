@@ -56,8 +56,9 @@ describe('', function () {
 		});
 
 		c.resolve(el);
+		c.resolve(el);
 
-		assert.equal(spy, 2);
+		assert.equal(spy, 4);
 
 	});
 
