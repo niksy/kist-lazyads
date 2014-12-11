@@ -38,10 +38,6 @@
 				"billboard": "billboard",
 				"mobile": "mobile",
 				"skyscraper": "skyscraper"
-			},
-			init: function () {
-				console.log('Lazyads initialized!');
-				console.log(this);
 			}
 		});
 
@@ -68,6 +64,10 @@
 				callback: function ( el, emit, wait ) {
 					console.log(2);
 				}
+			})
+			.init(function () {
+				console.log('Lazyads initialized!');
+				console.log(this);
 			});
 
 		$('[data-ad-id="billboard"]').on('foo:billboard', function ( e, el ) {

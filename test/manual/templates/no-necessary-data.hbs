@@ -17,11 +17,7 @@
 		var lazyads = new $.kist.lazyads({
 			el: '[data-ad-id]',
 			context: {},
-			content: {},
-			init: function () {
-				console.log('Lazyads initialized!');
-				console.log(this);
-			}
+			content: {}
 		});
 
 		lazyads
@@ -38,7 +34,11 @@
 					return el.data('ad-id') === 'mobile';
 				},
 				callback: function ( el, emit, wait ) {}
-			});
+			})
+			.init(function () {
+				console.log('Lazyads initialized!');
+				console.log(this);
+			})
 
 	</script>
 
