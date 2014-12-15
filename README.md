@@ -130,6 +130,13 @@ Callback to run when condition is true.
 | `emit` | `Function` | Accepts one argument: name of event to emit. Emitted event has form of `{Provided argument}:{Control name}` and is triggered on corresponding ad element. |
 | `waitForLayout` | `Function` | Alias for `setTimeout`. Default timeout is `300`. |
 
+### `.recheckControl()`
+
+Type: `Function`
+Returns `Lazyads`
+
+Iterates over every control entry and fires callback if condition is satisifed.
+
 ### `.destroy()`
 
 Type: `Function`  
