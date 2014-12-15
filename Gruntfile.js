@@ -74,7 +74,7 @@ module.exports = function ( grunt ) {
 		browserify: {
 			options: {
 				browserifyOptions: {
-					standalone: 'jQuery.kist.lazyads'
+					standalone: 'jQuery.kist.Lazyads'
 				}
 			},
 			standalone: {

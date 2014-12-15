@@ -1,6 +1,6 @@
-var lazyads = require('kist-lazyads');
+var Lazyads = require('kist-lazyads');
 
-lazyads({
+var lazyads = new Lazyads({
 	el: '[data-ad-id]',
 	context: {
 		"screen and (min-width:1000px) and (max-width:1199px)": ["billboard","skyscraper","floating"],

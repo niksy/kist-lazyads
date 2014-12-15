@@ -147,9 +147,9 @@ Destroys current Lazyads instance.
 ## Examples
 
 ```js
-var lazyads = require('kist-lazyads');
+var Lazyads = require('kist-lazyads');
 
-var ads = new lazyads({
+var lazyads = new Lazyads({
 	el: '.Banner',
 	context: {
 		"screen and (min-width:1000px) and (max-width:1199px)": ["zone1","zone2","zone3"],
@@ -167,7 +167,7 @@ var ads = new lazyads({
 	}
 });
 
-ads
+lazyads
 	.control({
 		name: 'zone1',
 		condition: function ( el ) {
@@ -217,7 +217,7 @@ $(document).on('foo:zone1', function ( e, el ) {
 ```js
 define(['kist-lazyads'], cb);
 
-window.$.kist.lazyads;
+window.$.kist.Lazyads;
 ```
 
 ## Browser support
