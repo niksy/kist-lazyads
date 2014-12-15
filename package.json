@@ -12,6 +12,7 @@
     "arr-diff": "git://github.com/niksy/arr-diff#indexof",
     "array-uniq": "git://github.com/niksy/array-uniq#indexof",
     "jquery": "^1.11.1",
+    "kist-toolbox": "^0.3.5",
     "krux-postscribe": "^1.3.2",
     "media-match": "git://github.com/niksy/media-match#v2.0.3"
   },
