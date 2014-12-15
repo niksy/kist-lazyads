@@ -1,8 +1,8 @@
-/*! kist-lazyads 0.1.6 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! kist-lazyads 0.1.7 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
+!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.Lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var postscribe = require(11);
+var postscribe = require(13);
 var unique = require(8);
 var Control = require(3);
 var meta = require(5);
@@ -485,9 +485,13 @@ Lazyads.prototype.destroy = function () {
 		this.context.destroy();
 		this.banners = null;
 		this.context = null;
+		this.active = false;
 	}
 	return this;
 };
+
+Lazyads.appendClass = require(10)(Lazyads.prototype.defaults.classes);
+Lazyads.appendNamespacedClasses = require(11)(Lazyads.prototype.defaults.classes, meta.ns.htmlClass);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],5:[function(require,module,exports){
@@ -581,6 +585,56 @@ module.exports = function (arr) {
 },{}],9:[function(require,module,exports){
 module.exports=require(7)
 },{}],10:[function(require,module,exports){
+(function (global){
+var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
+
+/**
+ * @param  {Object} classes
+ *
+ * @return {Function}
+ */
+module.exports = function ( classes ) {
+
+	/**
+	 * @param  {String} prop
+	 * @param  {String} className
+	 *
+	 * @return {String}
+	 */
+	return function ( prop, className ) {
+		return [classes[prop], className].join(' ');
+	};
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],11:[function(require,module,exports){
+(function (global){
+var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
+
+/**
+ * @param  {Object} classes
+ * @param  {String} defaultNs
+ *
+ * @return {Function}
+ */
+module.exports = function ( classes, defaultNs ) {
+
+	/**
+	 * @param  {String} ns
+	 *
+	 * @return {Object}
+	 */
+	return function ( ns ) {
+		return $.extend.apply(null, $.map(classes, function ( val, key ) {
+			var o = {};
+			o[key] = $.trim([val, (val.indexOf(defaultNs) !== -1 ? val.replace(defaultNs, ns) : '')].join(' '));
+			return o;
+		}));
+	};
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],12:[function(require,module,exports){
 (function (global){
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -952,10 +1006,10 @@ module.exports=require(7)
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(10);
+; htmlParser = global.htmlParser = require(12);
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
