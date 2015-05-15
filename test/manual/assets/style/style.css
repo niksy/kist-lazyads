@@ -3,6 +3,7 @@
 	background:red;
 	color:white;
 }
-.Banner.is-hidden {
+.Banner.is-hidden,
+.Banner.is-contentEmpty {
 	display:none;
 }

@@ -19,7 +19,7 @@
     "package.json"
   ],
   "dependencies": {
-    "jquery": ">=1",
+    "jquery": "~1.11.1",
     "media-match": "niksy/media-match#~2.0.3"
   },
   "devDependencies": {

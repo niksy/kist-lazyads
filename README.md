@@ -74,6 +74,28 @@ This will inject `zone1` content inside element with `data-ad-id="zone1"`
 <div data-ad-id="zone1"></div>
 ```
 
+#### emptyContentFilter
+
+Type: `Function`
+
+By default, banner is considered empty if it returns (trimmed) empty string for its content. Filter can be used to set custom test for content emptyness. It should return `true` if content is empty.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `content` | `String` | Banner content. |
+
+```js
+{
+	emptyContentFilter: function ( content ) {
+		return content.trim() === '';
+	}
+}
+```
+
+```html
+<div data-ad-id="zone1"></div>
+```
+
 #### classes
 
 Type: `Object`
@@ -164,6 +186,9 @@ var lazyads = new Lazyads({
 		"zone2": "<span>zone2 content</span>",
 		"zone3": "zone3 content",
 		"zone4": "zone4 content"
+	},
+	emptyContentFilter: function ( content ) {
+		return content.trim() === '';
 	}
 });
 
