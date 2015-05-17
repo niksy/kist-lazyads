@@ -106,7 +106,8 @@ HTML clasess for DOM elements.
 {
 	el: 'kist-Lazyads-item',
 	isLoaded: 'is-loaded',
-	isHidden: 'is-hidden'
+	isHidden: 'is-hidden',
+	isContentEmpty: 'is-contentEmpty'
 }
 ```
 
