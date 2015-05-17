@@ -163,8 +163,8 @@ module.exports = function ( grunt ) {
 
 	grunt.registerTask('stylecheck', ['jshint:main', 'jscs:main']);
 	grunt.registerTask('default', ['stylecheck', 'browserify:standalone', 'concat', 'uglify']);
-	grunt.registerTask('releasePatch', ['bump-only:patch', 'default', 'bump-commit']);
-	grunt.registerTask('releaseMinor', ['bump-only:minor', 'default', 'bump-commit']);
-	grunt.registerTask('releaseMajor', ['bump-only:major', 'default', 'bump-commit']);
+	grunt.registerTask('release:patch', ['bump-only:patch', 'default', 'bump-commit']);
+	grunt.registerTask('release:minor', ['bump-only:minor', 'default', 'bump-commit']);
+	grunt.registerTask('release:major', ['bump-only:major', 'default', 'bump-commit']);
 
 };
