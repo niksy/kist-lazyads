@@ -1,24 +1,114 @@
-/*! kist-lazyads 0.1.7 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2014 | License: MIT */
+/*! kist-lazyads 0.2.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2015 | License: MIT */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.Lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var postscribe = require(13);
-var unique = require(8);
-var Control = require(3);
-var meta = require(5);
+var postscribe = require(12);
+var meta = require(6);
 
 /**
- * @this   {Banners}
- *
- * @param  {String} name
- * @param  {Integer} index
- * @param  {Element} el
- *
- * @return {jQuery}
+ * @param  {Function} cb
  */
-function resolveByName ( name, index, el ) {
-	return $(el).data(this.contentIdDataProp) === name;
+function success ( cb ) {
+	this.setAsLoaded();
+	this.isLoaded = true;
+	this.isContentEmpty = false;
+	cb.call(null, this.$el);
 }
+
+/**
+ * @param  {Function} cb
+ */
+function successEmpty ( cb ) {
+	this.setAsContentEmpty();
+	this.show();
+	this.isLoaded = true;
+	this.isContentEmpty = true;
+	cb.call(null, this.$el);
+}
+
+/**
+ * @param  {String} name
+ * @param  {jQuery} el
+ * @param  {Object} classes
+ * @param  {Function} emptyContentFilter
+ */
+var Banner = module.exports = function ( name, el, classes, emptyContentFilter ) {
+	this.name = name;
+	this.$el = el;
+	this.classes = classes;
+	this.emptyContentFilter = emptyContentFilter;
+	this.isLoaded = false;
+	this.isContentEmpty = true;
+	this.stylesheets = [];
+
+	this.$el.addClass(this.classes.el);
+};
+
+Banner.prototype.show = function () {
+	this.$el.removeClass(this.classes.isHidden);
+};
+
+Banner.prototype.hide = function () {
+	this.$el.addClass(this.classes.isHidden);
+};
+
+Banner.prototype.setAsLoaded = function () {
+	this.$el.addClass(this.classes.isLoaded);
+};
+
+Banner.prototype.setAsContentEmpty = function () {
+	this.$el.addClass(this.classes.isContentEmpty);
+};
+
+/**
+ * @param  {String}   content
+ * @param  {Function} cb
+ */
+Banner.prototype.write = function ( content, cb ) {
+
+	// If zone content is empty (or doesn’t exist, e.g. ad blocker is active),
+	// we don't want to display it
+	if ( Boolean(this.emptyContentFilter.call(this.$el[0], content)) ) {
+		this.$el.html(content);
+		successEmpty.call(this, cb);
+		return;
+	}
+
+	// If zone content doesn't need postscribe parse (and won't benefit from
+	// it's modifications), just dump it to the page
+	if ( /responsive_google_ad/.test(content) ) {
+		this.$el.html(content);
+		success.call(this, cb);
+		return;
+	}
+
+	// If zone content has external stylesheets, append them for IE 8
+	if ( content.match(/link.+href/) && (document.all && !document.addEventListener) ) {
+		$(content).filter('link').each($.proxy(function ( index, link ) {
+			var $stylesheet = $('<link rel="stylesheet" href="' + $(link).attr('href') + '" class="' + meta.ns.htmlClass + '-ieStyle" />');
+			$stylesheet.appendTo('head');
+			this.stylesheets.push($stylesheet);
+		}, this));
+	}
+
+	postscribe(this.$el, content, $.proxy(success, this, cb));
+
+};
+
+Banner.prototype.destroy = function () {
+	this.$el.removeClass([this.classes.el, this.classes.isHidden, this.classes.isLoaded].join(' '));
+	$.each(this.stylesheets, function ( index, stylesheet ) {
+		stylesheet.remove();
+	});
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],2:[function(require,module,exports){
+(function (global){
+var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
+var unique = require(9);
+var filter = require(8);
+var Control = require(4);
 
 /**
  * @param  {Object} contexts
@@ -34,133 +124,117 @@ function getBannersFromContexts ( contexts ) {
 }
 
 /**
- * @this   {Banners}
- *
- * @param  {jQuery} el
- */
-function success ( el ) {
-	el.addClass(this.classes.isLoaded);
-	this.control.resolve(el);
-}
-
-/**
- * @class
- *
- * @param  {jQuery} el
+ * @param  {Banner[]} el
  * @param  {Object} options
  */
-var Banners = module.exports = function ( el, options ) {
+var Banners = module.exports = function ( banners, options ) {
 
-	this.$el               = el;
-	this.contentIdDataProp = options.contentIdDataProp;
-	this.content           = options.content;
-	this.classes           = options.classes;
-	this.list              = getBannersFromContexts(options.context);
-	this.control           = new Control();
-
-	this.$el.addClass(this.classes.el);
+	this.banners = banners;
+	this.content = options.content;
+	this.control = new Control();
+	this.list = getBannersFromContexts(options.context);
+	this.contentEmptyList = [];
 
 };
 
 /**
- * @param  {Array} arr
- * @param  {Function} filter
+ * Get banners with non-empty content
  *
- * @return {jQuery}
+ * @param  {String[]} arr
+ *
+ * @return {String[]}
  */
-Banners.prototype.get = function ( arr, filter ) {
+Banners.prototype.filterContentNonEmpty = function ( arr ) {
+	return filter(arr, $.proxy(function ( val ) {
+		return $.inArray(val, this.contentEmptyList) === -1;
+	}, this));
+};
 
-	var el = $();
-	filter = filter || function () {
+/**
+ * @param  {String[]} arr
+ * @param  {Function} cb
+ *
+ * @return {Banner[]}
+ */
+Banners.prototype.get = function ( arr, cb ) {
+
+	var banners = [];
+	cb = cb || function () {
 		return true;
 	};
 
-	$.each(arr, $.proxy(function ( index, val ) {
-		el = el.add(this.$el.filter($.proxy(resolveByName, this, val)));
-	}, this));
-
-	return el.filter(filter);
-
-};
-
-/**
- * @param  {Array} arr
- */
-Banners.prototype.show = function ( arr ) {
-	var el = this.get(arr);
-	el.removeClass(this.classes.isHidden);
-	this.control.resolve(el);
-	this.populate(arr);
-};
-
-/**
- * @param  {Array} arr
- */
-Banners.prototype.hide = function ( arr ) {
-	var el = this.get(arr);
-	el.addClass(this.classes.isHidden);
-	this.control.resolve(el);
-};
-
-/**
- * @param  {Array} arr
- */
-Banners.prototype.populate = function ( arr ) {
-
-	var isLoaded = this.classes.isLoaded;
-	var el = this.get(arr, function ( index, item ) {
-		return !$(item).hasClass(isLoaded);
+	banners = filter(this.banners, function ( banner ) {
+		return $.inArray(banner.name, arr) !== -1;
 	});
 
-	el.each($.proxy(function ( index, item ) {
-		this.write($(item));
+	return filter(banners, cb);
+
+};
+
+/**
+ * @param  {String[]} arr
+ */
+Banners.prototype.show = function ( arr ) {
+
+	var banners = this.get(arr);
+
+	$.each(banners, $.proxy(function ( index, banner ) {
+		banner.show();
+		this.control.resolve(banner);
 	}, this));
 
 };
 
 /**
- * @param  {jQuery} el
+ * @param  {String[]} arr
  */
-Banners.prototype.write = function ( el ) {
+Banners.prototype.hide = function ( arr ) {
 
-	var content = this.content[el.data(this.contentIdDataProp)];
+	var banners = this.get(arr);
 
-	// If zone content is empty (or doesn’t exist, e.g. ad blocker is active),
-	// we don't want to display it
-	if ( !Boolean(content) ) {
-		return;
-	}
+	$.each(banners, $.proxy(function ( index, banner ) {
+		banner.hide();
+		this.control.resolve(banner);
+	}, this));
 
-	// If zone content doesn't need postscribe parse (and won't benefit from
-	// it's modifications), just dump it to the page
-	if ( /responsive_google_ad/.test(content) ) {
-		el.html(content);
-		success.call(this, el);
-		return;
-	}
+};
 
-	// If zone content has external links, append them for IE 8
-	if ( content.match(/link.+href/) && (document.all && !document.addEventListener) ) {
-		$(content).filter('link').each(function ( index, link ) {
-			$('<link rel="stylesheet" href="' + $(link).attr('href') + '" class="' + meta.ns.htmlClass + '-ieStyle" />').appendTo('head');
-		});
-	}
+/**
+ * @param  {String[]} arr
+ */
+Banners.prototype.write = function ( arr ) {
 
-	postscribe(el, content, $.proxy(success, this, el));
+	var banners = this.get(arr, function ( banner ) {
+		return !banner.isLoaded && banner.isContentEmpty;
+	});
+
+	$.each(banners, $.proxy(function ( index, banner ) {
+
+		banner.write(this.content[banner.name], $.proxy(function () {
+			if ( banner.isContentEmpty ) {
+				this.contentEmptyList.push(banner.name);
+			} else {
+				this.show([banner.name]);
+			}
+		}, this));
+
+	}, this));
 
 };
 
 Banners.prototype.destroy = function () {
-	this.$el.removeClass([this.classes.el, this.classes.isHidden, this.classes.isLoaded].join(' '));
-	$('.' + meta.ns.htmlClass + '-ieStyle').remove();
+	$.each(this.banners, function ( index, banner ) {
+		banner.destroy();
+	});
 	this.control.destroy();
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var difference = require(6);
+var difference = require(7);
+var filter = require(8);
 
 /**
  * @param  {Object}  contexts
@@ -186,8 +260,23 @@ function listener ( mq ) {
 		this.calculate();
 	}
 	if ( !isAnyContextActive(this.contexts) ) {
-		this.banners.hide(this.banners.list);
+		this.banners.hide(this.banners.filterContentNonEmpty(this.banners.list));
 	}
+}
+
+/**
+ * @param  {Object} contexts
+ *
+ * @return {String[]}
+ */
+function getVisibleBanners ( contexts ) {
+	var arr = [];
+	$.each(contexts, function ( name, context ) {
+		if ( context.mq.matches ) {
+			arr = arr.concat(context.zones);
+		}
+	});
+	return arr;
 }
 
 /**
@@ -257,16 +346,12 @@ Context.prototype.unlisten = function () {
 
 Context.prototype.calculate = function () {
 
-	var visibleBanners = [];
+	var list = this.banners.filterContentNonEmpty(this.banners.list);
+	var visibleBanners = this.banners.filterContentNonEmpty(getVisibleBanners(this.contexts));
 
-	$.each(this.contexts, function ( name, val ) {
-		if ( val.mq.matches ) {
-			visibleBanners = visibleBanners.concat(val.zones);
-		}
-	});
-
-	this.banners.hide(difference(this.banners.list, visibleBanners));
+	this.banners.hide(difference(list, visibleBanners));
 	this.banners.show(visibleBanners);
+	this.banners.write(visibleBanners);
 
 };
 
@@ -276,7 +361,7 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 
@@ -320,7 +405,7 @@ function waitForLayout ( ctx ) {
  * @return {Control}
  */
 var Control = module.exports = function () {
-	this.list = [];
+	this.controls = [];
 };
 
 /**
@@ -339,55 +424,51 @@ Control.prototype.defaults = {
  */
 Control.prototype.add = function ( props ) {
 
-	var list = this.list;
+	var controls = this.controls;
 	var push = true;
 
-	$.each(list, function ( index, val ) {
-		if ( val.name === props.name ) {
-			$.extend(val, props);
+	$.each(controls, function ( index, control ) {
+		if ( control.name === props.name ) {
+			$.extend(control, props);
 			push = false;
 			return false;
 		}
 	});
 
 	if ( push ) {
-		list.push($.extend({}, this.defaults, props));
+		controls.push($.extend({}, this.defaults, props));
 	}
 
 };
 
 /**
- * @param  {jQuery} el
+ * @param  {Banner} banner
  */
-Control.prototype.resolve = function ( el ) {
+Control.prototype.resolve = function ( banner ) {
 
-	var list = this.list;
-	var val;
+	var controls = this.controls;
+	var $banner = banner.$el;
 
-	el.each(function () {
-		var item = $(this);
-
-		$.each(list, $.proxy(function ( index, val ) {
-			if ( Boolean(val.condition.call(this, item)) ) {
-				val.callback.call(this, item, emit(item, val.name), waitForLayout(this));
-			}
-		}, this));
-
-	});
+	$.each(controls, $.proxy(function ( index, control ) {
+		if ( Boolean(control.condition.call($banner[0], $banner)) ) {
+			control.callback.call($banner[0], $banner, emit($banner, control.name), waitForLayout(this));
+		}
+	}, this));
 
 };
 
 Control.prototype.destroy = function () {
-	this.list = [];
+	this.controls = [];
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var meta = require(5);
-var Banners = require(1);
-var Context = require(2);
+var meta = require(6);
+var Banner = require(1);
+var Banners = require(2);
+var Context = require(3);
 
 /**
  *
@@ -403,6 +484,18 @@ function hasNecessaryData ( options ) {
 		return false;
 	}
 	return true;
+}
+
+/**
+ * @param  {jQuery} $banners
+ *
+ * @return {Banner[]}
+ */
+function getBanners ( $banners ) {
+	return $.map($banners, $.proxy(function ( el ) {
+		var $el = $(el);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter);
+	}, this));
 }
 
 /**
@@ -422,7 +515,7 @@ var Lazyads = module.exports = function ( options ) {
 		$.error('window.matchMedia undefined.');
 	}
 
-	this.banners = new Banners($(this.options.el), this.options);
+	this.banners = new Banners(getBanners.call(this, $(this.options.el)), this.options);
 	this.context = new Context(this.banners, this.options.context);
 
 };
@@ -432,10 +525,21 @@ Lazyads.prototype.defaults = {
 	context: {},
 	content: {},
 	contentIdDataProp: 'ad-id',
+
+	/**
+	 * @param  {String}  content
+	 *
+	 * @return {Boolean}
+	 */
+	emptyContentFilter: function ( content ) {
+		return $.trim(content) === '';
+	},
+
 	classes: {
 		el: meta.ns.htmlClass + '-item',
 		isLoaded: 'is-loaded',
-		isHidden: 'is-hidden'
+		isHidden: 'is-hidden',
+		isContentEmpty: 'is-contentEmpty'
 	}
 };
 
@@ -471,7 +575,9 @@ Lazyads.prototype.control = function ( props ) {
  */
 Lazyads.prototype.recheckControl = function () {
 	if ( hasNecessaryData(this.options) ) {
-		this.banners.control.resolve(this.banners.$el);
+		$.each(this.banners, $.proxy(function ( index, banner ) {
+			this.banners.control.resolve(banner);
+		}, this));
 	}
 	return this;
 };
@@ -490,11 +596,8 @@ Lazyads.prototype.destroy = function () {
 	return this;
 };
 
-Lazyads.appendClass = require(10)(Lazyads.prototype.defaults.classes);
-Lazyads.appendNamespacedClasses = require(11)(Lazyads.prototype.defaults.classes, meta.ns.htmlClass);
-
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = {
 	name: 'lazyads',
 	ns: {
@@ -502,7 +605,7 @@ module.exports = {
 	}
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*!
  * arr-diff <https://github.com/jonschlinkert/arr-diff>
  *
@@ -512,7 +615,7 @@ module.exports = {
 
 'use strict';
 
-var indexof = require(7);
+var indexof = require(10);
 
 /**
  * Return the difference between two arrays.
@@ -554,21 +657,37 @@ module.exports = function difference(a, b) {
 };
 
 
-},{}],7:[function(require,module,exports){
-
-var indexOf = [].indexOf;
-
-module.exports = function(arr, obj){
-  if (indexOf) return arr.indexOf(obj);
-  for (var i = 0; i < arr.length; ++i) {
-    if (arr[i] === obj) return i;
-  }
-  return -1;
-};
 },{}],8:[function(require,module,exports){
+
+/**
+ * Array#filter.
+ *
+ * @param {Array} arr
+ * @param {Function} fn
+ * @param {Object=} self
+ * @return {Array}
+ * @throw TypeError
+ */
+
+module.exports = function (arr, fn, self) {
+  if (arr.filter) return arr.filter(fn);
+  if (void 0 === arr || null === arr) throw new TypeError;
+  if ('function' != typeof fn) throw new TypeError;
+  var ret = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (!hasOwn.call(arr, i)) continue;
+    var val = arr[i];
+    if (fn.call(self, val, i, arr)) ret.push(val);
+  }
+  return ret;
+};
+
+var hasOwn = Object.prototype.hasOwnProperty;
+
+},{}],9:[function(require,module,exports){
 'use strict';
 
-var indexof = require(9);
+var indexof = require(10);
 
 module.exports = function (arr) {
 	var ret = [];
@@ -582,59 +701,18 @@ module.exports = function (arr) {
 	return ret;
 };
 
-},{}],9:[function(require,module,exports){
-module.exports=require(7)
 },{}],10:[function(require,module,exports){
-(function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 
-/**
- * @param  {Object} classes
- *
- * @return {Function}
- */
-module.exports = function ( classes ) {
+var indexOf = [].indexOf;
 
-	/**
-	 * @param  {String} prop
-	 * @param  {String} className
-	 *
-	 * @return {String}
-	 */
-	return function ( prop, className ) {
-		return [classes[prop], className].join(' ');
-	};
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
 };
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],11:[function(require,module,exports){
-(function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-
-/**
- * @param  {Object} classes
- * @param  {String} defaultNs
- *
- * @return {Function}
- */
-module.exports = function ( classes, defaultNs ) {
-
-	/**
-	 * @param  {String} ns
-	 *
-	 * @return {Object}
-	 */
-	return function ( ns ) {
-		return $.extend.apply(null, $.map(classes, function ( val, key ) {
-			var o = {};
-			o[key] = $.trim([val, (val.indexOf(defaultNs) !== -1 ? val.replace(defaultNs, ns) : '')].join(' '));
-			return o;
-		}));
-	};
-};
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(require,module,exports){
 (function (global){
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -1006,10 +1084,10 @@ module.exports = function ( classes, defaultNs ) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(12);
+; htmlParser = global.htmlParser = require(11);
 ;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
@@ -1715,5 +1793,5 @@ module.exports = function ( classes, defaultNs ) {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[4])(4)
+},{}]},{},[5])(5)
 });
