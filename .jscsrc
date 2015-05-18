@@ -49,7 +49,7 @@
 	"disallowTrailingComma": true,
 	"requireBlocksOnNewline": 1,
 	"requireSpaceBeforeBlockStatements": true,
-	"requireCapitalizedComments": true,
+	"requireCapitalizedComments": { "allExcept": ["jshint"] },
 	"validateParameterSeparator": ", ",
 	"disallowQuotedKeysInObjects": "allButReserved",
 	"disallowSpacesInsideArrayBrackets": "all",

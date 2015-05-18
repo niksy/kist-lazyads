@@ -74,9 +74,29 @@ This will inject `zone1` content inside element with `data-ad-id="zone1"`
 <div data-ad-id="zone1"></div>
 ```
 
+#### alreadyLoadedFilter
+
+Type: `Function`
+Returns: `Boolean`
+
+By default, banners are considered not loaded until Lazyads is initialized. You may have some banners which already have some content before initialization (e.g. you may be using synchronous delivery for specific banners). Using this filter you can check for those banners and flag them as loaded at start.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `el` | `jQuery` | Banner element. |
+
+```js
+{
+	alreadyLoadedFilter: function ( el ) {
+		return el.hasClass('is-loaded');
+	}
+}
+```
+
 #### emptyContentFilter
 
 Type: `Function`
+Returns: `Boolean`
 
 By default, banner is considered empty if it returns (trimmed) empty string for its content. Filter can be used to set custom test for content emptyness. It should return `true` if content is empty.
 
@@ -187,6 +207,9 @@ var lazyads = new Lazyads({
 		"zone2": "<span>zone2 content</span>",
 		"zone3": "zone3 content",
 		"zone4": "zone4 content"
+	},
+	alreadyLoadedFilter: function ( el ) {
+		return el.hasClass('is-loaded');
 	},
 	emptyContentFilter: function ( content ) {
 		return content.trim() === '';
