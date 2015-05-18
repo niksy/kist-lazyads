@@ -1,6 +1,8 @@
-/*! kist-lazyads 0.2.2 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2015 | License: MIT */
+/*! kist-lazyads 0.3.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2015 | License: MIT */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.Lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
+/* jshint maxparams:false */
+
 var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
 var postscribe = require(13);
 var meta = require(6);
@@ -31,8 +33,9 @@ function successEmpty ( cb ) {
  * @param  {jQuery} el
  * @param  {Object} classes
  * @param  {Function} emptyContentFilter
+ * @param  {Function} alreadyLoadedFilter
  */
-var Banner = module.exports = function ( name, el, classes, emptyContentFilter ) {
+var Banner = module.exports = function ( name, el, classes, emptyContentFilter, alreadyLoadedFilter ) {
 	this.name = name;
 	this.$el = el;
 	this.classes = classes;
@@ -43,6 +46,9 @@ var Banner = module.exports = function ( name, el, classes, emptyContentFilter )
 	// This should probably be defined as prototype method
 	this.emptyContentFilter = function () {
 		return Boolean(emptyContentFilter.apply(this.$el[0], arguments));
+	};
+	this.alreadyLoadedFilter = function () {
+		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
 	};
 
 	this.$el.addClass(this.classes.el);
@@ -97,6 +103,7 @@ Banner.prototype.write = function ( content, cb ) {
 		}, this));
 	}
 
+	this.$el.empty();
 	postscribe(this.$el, content, $.proxy(success, this, cb));
 
 };
@@ -510,7 +517,7 @@ function getBanners ( $el ) {
 
 	var banners = $.map($el, $.proxy(function ( el ) {
 		var $el = $(el);
-		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter);
 	}, this));
 
 	// Initialize empty content banners
@@ -522,6 +529,15 @@ function getBanners ( $el ) {
 			banner.write(val);
 		}
 	});
+
+	// Get already loaded banners
+	$.each(banners, $.proxy(function ( index, banner ) {
+		if ( !banner.isLoaded && banner.alreadyLoadedFilter(banner.$el) ) {
+			banner.setAsLoaded();
+			banner.isLoaded = true;
+			banner.isContentEmpty = false;
+		}
+	}, this));
 
 	return banners;
 }
@@ -553,6 +569,15 @@ Lazyads.prototype.defaults = {
 	context: {},
 	content: {},
 	contentIdDataProp: 'ad-id',
+
+	/**
+	 * @param  {jQuery} $el
+	 *
+	 * @return {Boolean}
+	 */
+	alreadyLoadedFilter: function ( $el ) {
+		return false;
+	},
 
 	/**
 	 * @param  {String}  content
