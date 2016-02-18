@@ -9,12 +9,10 @@
     "test": "test"
   },
   "dependencies": {
-    "arr-diff": "git://github.com/niksy/arr-diff#indexof",
-    "array-filter": "^0.2.0",
-    "array-uniq": "git://github.com/niksy/array-uniq#indexof",
     "jquery": "^1.11.1",
     "krux-postscribe": "^1.3.2",
-    "media-match": "git://github.com/niksy/media-match#v2.0.3"
+    "media-match": "git://github.com/niksy/media-match#v2.0.3",
+    "mout": "^0.11.1"
   },
   "devDependencies": {
     "bower": "^1.7.7",
