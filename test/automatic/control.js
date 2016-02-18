@@ -14,8 +14,8 @@ describe('', function () {
 		c.add({name:'foo'});
 		c.add({name:'bar'});
 
-		assert.equal(c.list.length, 2);
-		assert.deepEqual(c.list, [
+		assert.equal(c.controls.length, 2);
+		assert.deepEqual(c.controls, [
 			$.extend({}, Control.prototype.defaults, {name: 'foo'}),
 			$.extend({}, Control.prototype.defaults, {name: 'bar'})
 		]);
@@ -30,35 +30,10 @@ describe('', function () {
 		c.add({name:'foo', callback: 1});
 		c.add({name:'foo', callback: 2});
 
-		assert.equal(c.list.length, 1);
-		assert.deepEqual(c.list, [
+		assert.equal(c.controls.length, 1);
+		assert.deepEqual(c.controls, [
 			$.extend({}, Control.prototype.defaults, {name: 'foo', callback: 2})
 		]);
-
-	});
-
-	it('should trigger event when properly resolved', function () {
-
-		var c = new Control();
-		var el = $({});
-		var spy = 0;
-
-		c.add({
-			name:'foo',
-			callback: function ( el, emit ) {
-				emit('done');
-				spy++;
-			}
-		});
-
-		el.on('done:foo', function ( e, el ) {
-			spy++;
-		});
-
-		c.resolve(el);
-		c.resolve(el);
-
-		assert.equal(spy, 4);
 
 	});
 

@@ -45,20 +45,6 @@ module.exports = function ( grunt ) {
 			}
 		},
 
-		jscs: {
-			main: {
-				options: {
-					config: '.jscsrc'
-				},
-				files: {
-					src: [
-						'<%= pkg.main %>',
-						'lib/**/*.js'
-					]
-				}
-			}
-		},
-
 		jshint: {
 			main: {
 				options: {
@@ -145,6 +131,17 @@ module.exports = function ( grunt ) {
 			test: {
 				configFile: 'karma.conf.js'
 			}
+		},
+
+		'update_json': {
+			options: {
+				indent: '  '
+			},
+			bower: {
+				src: 'package.json',
+				dest: 'bower.json',
+				fields: 'version'
+			}
 		}
 
 	});
@@ -161,10 +158,7 @@ module.exports = function ( grunt ) {
 		grunt.task.run(tasks);
 	});
 
-	grunt.registerTask('stylecheck', ['jshint:main', 'jscs:main']);
-	grunt.registerTask('default', ['stylecheck', 'browserify:standalone', 'concat', 'uglify']);
-	grunt.registerTask('release:patch', ['bump-only:patch', 'default', 'bump-commit']);
-	grunt.registerTask('release:minor', ['bump-only:minor', 'default', 'bump-commit']);
-	grunt.registerTask('release:major', ['bump-only:major', 'default', 'bump-commit']);
+	grunt.registerTask('lint', ['jshint:main']);
+	grunt.registerTask('build', ['browserify:standalone', 'concat', 'uglify']);
 
 };
