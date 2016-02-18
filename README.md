@@ -173,10 +173,23 @@ Callback to run when condition is true.
 | `emit` | `Function` | Accepts one argument: name of event to emit. Emitted event has form of `{Provided argument}:{Control name}` and is triggered on corresponding ad element. |
 | `waitForLayout` | `Function` | Alias for `setTimeout`. Default timeout is `300`. |
 
+### `.addPlaceholder(el)`
+
+Type: `Function`  
+Returns: `Lazyads`
+
+Dynamically creates placeholder for ad. Useful if you don’t want to display specific ad on Lazyads initialization.
+
+#### el
+
+Type: `String|jQuery|Element`
+
+Element which will contain ad content. String should be valid CSS selector.
+
 ### `.recheckControl()`
 
 Type: `Function`
-Returns `Lazyads`
+Returns: `Lazyads`
 
 Iterates over every control entry and fires callback if condition is satisifed.
 
@@ -195,18 +208,19 @@ var Lazyads = require('kist-lazyads');
 var lazyads = new Lazyads({
 	el: '.Banner',
 	context: {
-		"screen and (min-width:1000px) and (max-width:1199px)": ["ad1","ad2","ad3"],
-		"screen and (min-width:1500px)": ["ad1","ad2","ad3"],
-		"screen and (min-width:915px) and (max-width:999px)": ["ad1","ad2","ad3","ad3"],
-		"screen and (min-width:1200px) and (max-width:1499px)": ["ad1","ad2","ad3"],
-		"screen and (min-width:728px) and (max-width:914px)": ["ad1","ad3"],
-		"screen and (max-width:599px)": ["ad4"]
+		'screen and (min-width:1000px) and (max-width:1199px)': ['ad1','ad2','ad3','ad5'],
+		'screen and (min-width:1500px)': ['ad1','ad2','ad3'],
+		'screen and (min-width:915px) and (max-width:999px)': ['ad1','ad2','ad3','ad3','ad5'],
+		'screen and (min-width:1200px) and (max-width:1499px)': ['ad1','ad2','ad3'],
+		'screen and (min-width:728px) and (max-width:914px)': ['ad1','ad3','ad5'],
+		'screen and (max-width:599px)': ['ad4']
 	},
 	content: {
-		"ad1": "<b>ad1 content</b>",
-		"ad2": "<span>ad2 content</span>",
-		"ad3": "ad3 content",
-		"ad4": "ad4 content"
+		'ad1': '<b>ad1 content</b>',
+		'ad2': '<span>ad2 content</span>',
+		'ad3': 'ad3 content',
+		'ad4': 'ad4 content'
+		'ad5': 'ad5 content'
 	},
 	alreadyLoadedFilter: function ( el ) {
 		return el.hasClass('is-loaded');
@@ -243,6 +257,8 @@ lazyads
 	.init(function () {
 		console.log('Lazyads initialized!');
 	});
+
+lazyads.addPlaceholder($('<div clas="Banner" data-ad-id="ad5"></div>'));
 
 $('[data-ad-id="ad1"]').on('foo:ad1', function ( e, el ) {
 	console.log(arguments);
