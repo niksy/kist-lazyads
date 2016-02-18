@@ -28,16 +28,16 @@ Element which will contain ad content. String should be valid CSS selector.
 
 Type: `Object`
 
-List of contexts and their zones.
+List of contexts and their ads.
 
 ```js
 {
-	"screen and (min-width:1000px) and (max-width:1199px)": ["zone1","zone2","zone3"],
-	"screen and (min-width:1500px)": ["zone1","zone2","zone3"],
-	"screen and (min-width:915px) and (max-width:999px)": ["zone1","zone2","zone3","zone3"],
-	"screen and (min-width:1200px) and (max-width:1499px)": ["zone1","zone2","zone3"],
-	"screen and (min-width:728px) and (max-width:914px)": ["zone1","zone3"],
-	"screen and (max-width:599px)": ["zone4"]
+	"screen and (min-width:1000px) and (max-width:1199px)": ["ad1","ad2","ad3"],
+	"screen and (min-width:1500px)": ["ad1","ad2","ad3"],
+	"screen and (min-width:915px) and (max-width:999px)": ["ad1","ad2","ad3","ad3"],
+	"screen and (min-width:1200px) and (max-width:1499px)": ["ad1","ad2","ad3"],
+	"screen and (min-width:728px) and (max-width:914px)": ["ad1","ad3"],
+	"screen and (max-width:599px)": ["ad4"]
 }
 ```
 
@@ -49,10 +49,10 @@ Ad content which will be injected inside document elements defined by `el` and `
 
 ```js
 {
-	"zone1": "<b>zone1 content</b>",
-	"zone2": "<span>zone2 content</span>",
-	"zone3": "zone3 content",
-	"zone4": "zone4 content"
+	"ad1": "<b>ad1 content</b>",
+	"ad2": "<span>ad2 content</span>",
+	"ad3": "ad3 content",
+	"ad4": "ad4 content"
 }
 ```
 
@@ -62,7 +62,7 @@ Type: `String`
 
 `data` property which will be used to connect with ad content.
 
-This will inject `zone1` content inside element with `data-ad-id="zone1"`
+This will inject `ad1` content inside element with `data-ad-id="ad1"`
 
 ```js
 {
@@ -71,7 +71,7 @@ This will inject `zone1` content inside element with `data-ad-id="zone1"`
 ```
 
 ```html
-<div data-ad-id="zone1"></div>
+<div data-ad-id="ad1"></div>
 ```
 
 #### alreadyLoadedFilter
@@ -113,7 +113,7 @@ By default, banner is considered empty if it returns (trimmed) empty string for 
 ```
 
 ```html
-<div data-ad-id="zone1"></div>
+<div data-ad-id="ad1"></div>
 ```
 
 #### classes
@@ -195,18 +195,18 @@ var Lazyads = require('kist-lazyads');
 var lazyads = new Lazyads({
 	el: '.Banner',
 	context: {
-		"screen and (min-width:1000px) and (max-width:1199px)": ["zone1","zone2","zone3"],
-		"screen and (min-width:1500px)": ["zone1","zone2","zone3"],
-		"screen and (min-width:915px) and (max-width:999px)": ["zone1","zone2","zone3","zone3"],
-		"screen and (min-width:1200px) and (max-width:1499px)": ["zone1","zone2","zone3"],
-		"screen and (min-width:728px) and (max-width:914px)": ["zone1","zone3"],
-		"screen and (max-width:599px)": ["zone4"]
+		"screen and (min-width:1000px) and (max-width:1199px)": ["ad1","ad2","ad3"],
+		"screen and (min-width:1500px)": ["ad1","ad2","ad3"],
+		"screen and (min-width:915px) and (max-width:999px)": ["ad1","ad2","ad3","ad3"],
+		"screen and (min-width:1200px) and (max-width:1499px)": ["ad1","ad2","ad3"],
+		"screen and (min-width:728px) and (max-width:914px)": ["ad1","ad3"],
+		"screen and (max-width:599px)": ["ad4"]
 	},
 	content: {
-		"zone1": "<b>zone1 content</b>",
-		"zone2": "<span>zone2 content</span>",
-		"zone3": "zone3 content",
-		"zone4": "zone4 content"
+		"ad1": "<b>ad1 content</b>",
+		"ad2": "<span>ad2 content</span>",
+		"ad3": "ad3 content",
+		"ad4": "ad4 content"
 	},
 	alreadyLoadedFilter: function ( el ) {
 		return el.hasClass('is-loaded');
@@ -218,9 +218,9 @@ var lazyads = new Lazyads({
 
 lazyads
 	.control({
-		name: 'zone1',
+		name: 'ad1',
 		condition: function ( el ) {
-			return el.data('ad-id') === 'zone1';
+			return el.data('ad-id') === 'ad1';
 		},
 		callback: function ( el, emit, wait ) {
 			if ( el.hasClass('is-loaded') ) {
@@ -232,9 +232,9 @@ lazyads
 		}
 	})
 	.control({
-		name: 'zone4',
+		name: 'ad4',
 		condition: function ( el ) {
-			return el.data('ad-id') === 'zone4';
+			return el.data('ad-id') === 'ad4';
 		},
 		callback: function ( el, emit, wait ) {
 			console.log(2);
@@ -244,21 +244,21 @@ lazyads
 		console.log('Lazyads initialized!');
 	});
 
-$('[data-ad-id="zone1"]').on('foo:zone1', function ( e, el ) {
+$('[data-ad-id="ad1"]').on('foo:ad1', function ( e, el ) {
 	console.log(arguments);
 });
 
-$(document).on('foo:zone1', function ( e, el ) {
+$(document).on('foo:ad1', function ( e, el ) {
 	console.log(e.currentTarget);
 	console.log(e.target);
 });
 ```
 
 ```html
-<data class="Banner" data-ad-id="zone1"></div>
-<data class="Banner" data-ad-id="zone2"></div>
-<data class="Banner" data-ad-id="zone3"></div>
-<data class="Banner" data-ad-id="zone4"></div>
+<data class="Banner" data-ad-id="ad1"></div>
+<data class="Banner" data-ad-id="ad2"></div>
+<data class="Banner" data-ad-id="ad3"></div>
+<data class="Banner" data-ad-id="ad4"></div>
 ```
 
 ### AMD and global
