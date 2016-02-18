@@ -1,10 +1,10 @@
-/*! kist-lazyads 0.3.1 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2015 | License: MIT */
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self);var n=f;n=n.jQuery||(n.jQuery={}),n=n.kist||(n.kist={}),n.Lazyads=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! kist-lazyads 0.4.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2016 | License: MIT */
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 /* jshint maxparams:false */
 
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var postscribe = require(13);
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var postscribe = require(8);
 var meta = require(6);
 
 /**
@@ -36,6 +36,14 @@ function successEmpty ( cb ) {
  * @param  {Function} alreadyLoadedFilter
  */
 var Banner = module.exports = function ( name, el, classes, emptyContentFilter, alreadyLoadedFilter ) {
+
+	if ( !name ) {
+		throw new Error('Ad name is not provided.');
+	}
+	if ( !el ) {
+		throw new Error('Ad placeholder element is not provided.');
+	}
+
 	this.name = name;
 	this.$el = el;
 	this.classes = classes;
@@ -78,7 +86,7 @@ Banner.prototype.write = function ( content, cb ) {
 
 	cb = cb || $.noop;
 
-	// If zone content is empty (or doesn’t exist, e.g. ad blocker is active),
+	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
 	if ( this.emptyContentFilter(content) ) {
 		this.$el.html(content);
@@ -86,7 +94,7 @@ Banner.prototype.write = function ( content, cb ) {
 		return;
 	}
 
-	// If zone content doesn't need postscribe parse (and won't benefit from
+	// If ad content doesn't need postscribe parse (and won't benefit from
 	// it's modifications), just dump it to the page
 	if ( /responsive_google_ad/.test(content) ) {
 		this.$el.html(content);
@@ -94,7 +102,7 @@ Banner.prototype.write = function ( content, cb ) {
 		return;
 	}
 
-	// If zone content has external stylesheets, append them for IE 8
+	// If ad content has external stylesheets, append them for IE 8
 	if ( content.match(/link.+href/) && (document.all && !document.addEventListener) ) {
 		$(content).filter('link').each($.proxy(function ( index, link ) {
 			var $stylesheet = $('<link rel="stylesheet" href="' + $(link).attr('href') + '" class="' + meta.ns.htmlClass + '-ieStyle" />');
@@ -116,11 +124,12 @@ Banner.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+},{"6":6,"8":8}],2:[function(require,module,exports){
 (function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var unique = require(10);
-var filter = require(9);
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var unique = require(17);
+var filter = require(12);
+var Banner = require(1);
 var Control = require(4);
 
 /**
@@ -137,24 +146,93 @@ function getBannersFromContexts ( contexts ) {
 }
 
 /**
- * @param  {Banner[]} el
+ * @param  {jQuery|Element} el
  * @param  {Object} options
  */
-var Banners = module.exports = function ( banners, options ) {
+var Banners = module.exports = function ( el, options ) {
 
-	this.banners = banners;
+	this.options = options;
 	this.content = options.content;
 	this.control = new Control();
 	this.list = getBannersFromContexts(options.context);
-	this.contentEmptyList = [];
 
-	// Get initial empty content banners
-	this.contentEmptyList = filter(this.banners, function ( banner ) {
-		return banner.isLoaded && banner.isContentEmpty;
-	});
-	this.contentEmptyList = $.map(this.contentEmptyList, function ( banner ) {
+	this.add(this.createBanners($(el)));
+
+};
+
+/**
+ * @param  {jQuery} $el
+ *
+ * @return {Banner[]}
+ */
+Banners.prototype.createBanners = function ( $el ) {
+
+	// Get existing banner names
+	var existingBannerNames = $.map(this.banners || [], function ( banner ) {
 		return banner.name;
 	});
+
+	// Filter only new banners (not already added to collection)
+	var $newEl = $el.filter($.proxy(function ( index, el ) {
+		var $el = $(el);
+		return $.inArray($el.data(this.options.contentIdDataProp), existingBannerNames) === -1;
+	}, this));
+
+	// Create Banner instances based on new banner elements
+	var banners = $.map($newEl, $.proxy(function ( el ) {
+		var $el = $(el);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter);
+	}, this));
+
+	// Initialize empty content banners
+	$.each(this.content, function ( name, val ) {
+
+		var banner = filter(banners, function ( banner ) {
+			return banner.name === name;
+		})[0];
+
+		// If banner element for that ad actually exists on page and has empty content
+		if ( banner && banner.emptyContentFilter(val) ) {
+			banner.write(val);
+		}
+
+	});
+
+	// Set state for already loaded banners
+	$.each(banners, $.proxy(function ( index, banner ) {
+		if ( !banner.isLoaded && banner.alreadyLoadedFilter(banner.$el) ) {
+			banner.setAsLoaded();
+			banner.isLoaded = true;
+			banner.isContentEmpty = false;
+		}
+	}, this));
+
+	return banners;
+
+};
+
+/**
+ * @param  {Banner[]} banners
+ *
+ * @return {Banner[]}
+ */
+Banners.prototype.add = function ( banners ) {
+
+	var contentEmptyList = [];
+	banners = banners || [];
+
+	// Get empty content banners
+	contentEmptyList = filter(banners, function ( banner ) {
+		return banner.isLoaded && banner.isContentEmpty;
+	});
+	contentEmptyList = $.map(contentEmptyList, function ( banner ) {
+		return banner.name;
+	});
+
+	this.banners = (this.banners || []).concat(banners);
+	this.contentEmptyList = (this.contentEmptyList || []).concat(contentEmptyList);
+
+	return banners;
 
 };
 
@@ -251,11 +329,11 @@ Banners.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
+},{"1":1,"12":12,"17":17,"4":4}],3:[function(require,module,exports){
 (function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var difference = require(7);
-var filter = require(9);
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var intersection = require(14);
+var difference = require(10);
 
 /**
  * @param  {Object}  contexts
@@ -278,7 +356,7 @@ function isAnyContextActive ( contexts ) {
  */
 function listener ( mq ) {
 	if ( mq.matches ) {
-		this.calculate();
+		this.calculate(this.banners.list);
 	}
 	if ( !isAnyContextActive(this.contexts) ) {
 		this.banners.hide(this.banners.filterContentNonEmpty(this.banners.list));
@@ -286,23 +364,6 @@ function listener ( mq ) {
 }
 
 /**
- * @param  {Object} contexts
- *
- * @return {String[]}
- */
-function getVisibleBanners ( contexts ) {
-	var arr = [];
-	$.each(contexts, function ( name, context ) {
-		if ( context.mq.matches ) {
-			arr = arr.concat(context.zones);
-		}
-	});
-	return arr;
-}
-
-/**
- * @class
- *
  * @param  {Banners} banners
  * @param  {Object} rawContexts
  */
@@ -315,7 +376,7 @@ var Context = module.exports = function ( banners, rawContexts ) {
 
 Context.prototype.init = function () {
 	this.listen();
-	this.calculate();
+	this.calculate(this.banners.list);
 };
 
 /**
@@ -328,11 +389,11 @@ Context.prototype.transformContexts = function ( rawContexts ) {
 	var ret = {};
 	var gmm = $.proxy(this.getMatchMedia, this);
 
-	$.each(rawContexts, function ( mq, zones ) {
+	$.each(rawContexts, function ( mq, ads ) {
 		ret[mq] = {
 			context: mq,
 			mq: gmm(mq),
-			zones: zones
+			ads: ads
 		};
 	});
 
@@ -365,15 +426,38 @@ Context.prototype.unlisten = function () {
 
 };
 
-Context.prototype.calculate = function () {
+/**
+ * @param  {String[]} rawList
+ */
+Context.prototype.calculate = function ( rawList ) {
 
-	var list = this.banners.filterContentNonEmpty(this.banners.list);
-	var visibleBanners = this.banners.filterContentNonEmpty(getVisibleBanners(this.contexts));
+	var nonEmpty = $.proxy(this.banners.filterContentNonEmpty, this.banners);
 
-	this.banners.hide(difference(list, visibleBanners));
+	var allList = nonEmpty(this.banners.list);
+	var allVisibleBanners = nonEmpty(this.getVisibleBanners());
+	var allHiddenBanners = difference(allList, allVisibleBanners);
+
+	var list = nonEmpty(rawList);
+	var visibleBanners = intersection(allVisibleBanners, list);
+	var hiddenBanners = difference(list, visibleBanners);
+
+	this.banners.hide(hiddenBanners);
 	this.banners.show(visibleBanners);
 	this.banners.write(visibleBanners);
 
+};
+
+/**
+ * @return {String[]}
+ */
+Context.prototype.getVisibleBanners = function () {
+	var arr = [];
+	$.each(this.contexts, function ( name, context ) {
+		if ( context.mq.matches ) {
+			arr = arr.concat(context.ads);
+		}
+	});
+	return arr;
 };
 
 Context.prototype.destroy = function () {
@@ -382,9 +466,9 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{"10":10,"14":14}],4:[function(require,module,exports){
 (function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
 
 /**
  * @param  {jQuery} el
@@ -485,10 +569,8 @@ Control.prototype.destroy = function () {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],5:[function(require,module,exports){
 (function (global){
-var $ = (typeof window !== "undefined" ? window.$ : typeof global !== "undefined" ? global.$ : null);
-var filter = require(9);
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
 var meta = require(6);
-var Banner = require(1);
 var Banners = require(2);
 var Context = require(3);
 
@@ -509,44 +591,6 @@ function hasNecessaryData ( options ) {
 }
 
 /**
- * @param  {jQuery} $el
- *
- * @return {Banner[]}
- */
-function getBanners ( $el ) {
-
-	var banners = $.map($el, $.proxy(function ( el ) {
-		var $el = $(el);
-		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter);
-	}, this));
-
-	// Initialize empty content banners
-	$.each(this.options.content, function ( name, val ) {
-
-		var banner = filter(banners, function ( banner ) {
-			return banner.name === name;
-		})[0];
-
-		// If banner element for that zone actually exists on page and has empty content
-		if ( banner && banner.emptyContentFilter(val) ) {
-			banner.write(val);
-		}
-
-	});
-
-	// Get already loaded banners
-	$.each(banners, $.proxy(function ( index, banner ) {
-		if ( !banner.isLoaded && banner.alreadyLoadedFilter(banner.$el) ) {
-			banner.setAsLoaded();
-			banner.isLoaded = true;
-			banner.isContentEmpty = false;
-		}
-	}, this));
-
-	return banners;
-}
-
-/**
  * @class
  *
  * @param  {Object} options
@@ -563,7 +607,7 @@ var Lazyads = module.exports = function ( options ) {
 		$.error('window.matchMedia undefined.');
 	}
 
-	this.banners = new Banners(getBanners.call(this, $(this.options.el)), this.options);
+	this.banners = new Banners(this.options.el, this.options);
 	this.context = new Context(this.banners, this.options.context);
 
 };
@@ -640,6 +684,22 @@ Lazyads.prototype.recheckControl = function () {
 };
 
 /**
+ * @param {jQuery|Element} el
+ *
+ * @return {Lazyads}
+ */
+Lazyads.prototype.addPlaceholder = function ( el ) {
+	if ( hasNecessaryData(this.options) ) {
+		var banners = this.banners.add(this.banners.createBanners($(el)));
+		var list = $.map(banners, function ( banner ) {
+			return banner.name;
+		});
+		this.context.calculate(list);
+	}
+	return this;
+};
+
+/**
  * @return {Lazyads}
  */
 Lazyads.prototype.destroy = function () {
@@ -654,7 +714,7 @@ Lazyads.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{"2":2,"3":3,"6":6}],6:[function(require,module,exports){
 module.exports = {
 	name: 'lazyads',
 	ns: {
@@ -663,117 +723,8 @@ module.exports = {
 };
 
 },{}],7:[function(require,module,exports){
-/*!
- * arr-diff <https://github.com/jonschlinkert/arr-diff>
- *
- * Copyright (c) 2014 Jon Schlinkert, contributors.
- * Licensed under the MIT License
- */
-
-'use strict';
-
-var indexof = require(8);
-
-/**
- * Return the difference between two arrays.
- *
- * ```js
- * var a = ['a', 'b', 'c', 'd'];
- * var b = ['b', 'c'];
- *
- * console.log(difference(a, b))
- * //=> ['a', 'd']
- * ```
- *
- * @param  {Array} `a`
- * @param  {Array} `b`
- * @return {Array}
- */
-
-module.exports = function difference(a, b) {
-  var alen = a.length - 1;
-  var blen = b.length;
-
-  if (alen === 0) {
-    return [];
-  }
-  if (blen === 0) {
-    return a;
-  }
-
-  var arr = [];
-
-  for (var i = alen; i >= 0; i--) {
-    var key = a[i];
-    if (indexof(b, key) === -1) {
-      arr.push(key);
-    }
-  }
-
-  return arr;
-};
-
-
-},{}],8:[function(require,module,exports){
-
-var indexOf = [].indexOf;
-
-module.exports = function(arr, obj){
-  if (indexOf) return arr.indexOf(obj);
-  for (var i = 0; i < arr.length; ++i) {
-    if (arr[i] === obj) return i;
-  }
-  return -1;
-};
-},{}],9:[function(require,module,exports){
-
-/**
- * Array#filter.
- *
- * @param {Array} arr
- * @param {Function} fn
- * @param {Object=} self
- * @return {Array}
- * @throw TypeError
- */
-
-module.exports = function (arr, fn, self) {
-  if (arr.filter) return arr.filter(fn);
-  if (void 0 === arr || null === arr) throw new TypeError;
-  if ('function' != typeof fn) throw new TypeError;
-  var ret = [];
-  for (var i = 0; i < arr.length; i++) {
-    if (!hasOwn.call(arr, i)) continue;
-    var val = arr[i];
-    if (fn.call(self, val, i, arr)) ret.push(val);
-  }
-  return ret;
-};
-
-var hasOwn = Object.prototype.hasOwnProperty;
-
-},{}],10:[function(require,module,exports){
-'use strict';
-
-var indexof = require(11);
-
-module.exports = function (arr) {
-	var ret = [];
-
-	for (var i = 0; i < arr.length; i++) {
-		if (indexof(ret, arr[i]) === -1) {
-			ret.push(arr[i]);
-		}
-	}
-
-	return ret;
-};
-
-},{}],11:[function(require,module,exports){
-module.exports=require(8)
-},{}],12:[function(require,module,exports){
 (function (global){
-;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
+; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
 // Based on http://ejohn.org/blog/pure-javascript-html-parser/
 //TODO(#39)
@@ -1143,11 +1094,11 @@ module.exports=require(8)
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],13:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(12);
-;__browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
+; htmlParser = global.htmlParser = require(7);
+; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
 //     postscribe is freely distributable under the MIT license.
@@ -1852,5 +1803,527 @@ module.exports=require(8)
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"7":7}],9:[function(require,module,exports){
+var indexOf = require(13);
+
+    /**
+     * If array contains values.
+     */
+    function contains(arr, val) {
+        return indexOf(arr, val) !== -1;
+    }
+    module.exports = contains;
+
+
+},{"13":13}],10:[function(require,module,exports){
+var unique = require(17);
+var filter = require(12);
+var some = require(16);
+var contains = require(9);
+var slice = require(15);
+
+
+    /**
+     * Return a new Array with elements that aren't present in the other Arrays.
+     */
+    function difference(arr) {
+        var arrs = slice(arguments, 1),
+            result = filter(unique(arr), function(needle){
+                return !some(arrs, function(haystack){
+                    return contains(haystack, needle);
+                });
+            });
+        return result;
+    }
+
+    module.exports = difference;
+
+
+
+},{"12":12,"15":15,"16":16,"17":17,"9":9}],11:[function(require,module,exports){
+var makeIterator = require(19);
+
+    /**
+     * Array every
+     */
+    function every(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var result = true;
+        if (arr == null) {
+            return result;
+        }
+
+        var i = -1, len = arr.length;
+        while (++i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if (!callback(arr[i], i, arr) ) {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    module.exports = every;
+
+
+},{"19":19}],12:[function(require,module,exports){
+var makeIterator = require(19);
+
+    /**
+     * Array filter
+     */
+    function filter(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var results = [];
+        if (arr == null) {
+            return results;
+        }
+
+        var i = -1, len = arr.length, value;
+        while (++i < len) {
+            value = arr[i];
+            if (callback(value, i, arr)) {
+                results.push(value);
+            }
+        }
+
+        return results;
+    }
+
+    module.exports = filter;
+
+
+
+},{"19":19}],13:[function(require,module,exports){
+
+
+    /**
+     * Array.indexOf
+     */
+    function indexOf(arr, item, fromIndex) {
+        fromIndex = fromIndex || 0;
+        if (arr == null) {
+            return -1;
+        }
+
+        var len = arr.length,
+            i = fromIndex < 0 ? len + fromIndex : fromIndex;
+        while (i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if (arr[i] === item) {
+                return i;
+            }
+
+            i++;
+        }
+
+        return -1;
+    }
+
+    module.exports = indexOf;
+
+
+},{}],14:[function(require,module,exports){
+var unique = require(17);
+var filter = require(12);
+var every = require(11);
+var contains = require(9);
+var slice = require(15);
+
+
+    /**
+     * Return a new Array with elements common to all Arrays.
+     * - based on underscore.js implementation
+     */
+    function intersection(arr) {
+        var arrs = slice(arguments, 1),
+            result = filter(unique(arr), function(needle){
+                return every(arrs, function(haystack){
+                    return contains(haystack, needle);
+                });
+            });
+        return result;
+    }
+
+    module.exports = intersection;
+
+
+
+},{"11":11,"12":12,"15":15,"17":17,"9":9}],15:[function(require,module,exports){
+
+
+    /**
+     * Create slice of source array or array-like object
+     */
+    function slice(arr, start, end){
+        var len = arr.length;
+
+        if (start == null) {
+            start = 0;
+        } else if (start < 0) {
+            start = Math.max(len + start, 0);
+        } else {
+            start = Math.min(start, len);
+        }
+
+        if (end == null) {
+            end = len;
+        } else if (end < 0) {
+            end = Math.max(len + end, 0);
+        } else {
+            end = Math.min(end, len);
+        }
+
+        var result = [];
+        while (start < end) {
+            result.push(arr[start++]);
+        }
+
+        return result;
+    }
+
+    module.exports = slice;
+
+
+
+},{}],16:[function(require,module,exports){
+var makeIterator = require(19);
+
+    /**
+     * Array some
+     */
+    function some(arr, callback, thisObj) {
+        callback = makeIterator(callback, thisObj);
+        var result = false;
+        if (arr == null) {
+            return result;
+        }
+
+        var i = -1, len = arr.length;
+        while (++i < len) {
+            // we iterate over sparse items since there is no way to make it
+            // work properly on IE 7-8. see #64
+            if ( callback(arr[i], i, arr) ) {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    module.exports = some;
+
+
+},{"19":19}],17:[function(require,module,exports){
+var filter = require(12);
+
+    /**
+     * @return {array} Array of unique items
+     */
+    function unique(arr, compare){
+        compare = compare || isEqual;
+        return filter(arr, function(item, i, arr){
+            var n = arr.length;
+            while (++i < n) {
+                if ( compare(item, arr[i]) ) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    function isEqual(a, b){
+        return a === b;
+    }
+
+    module.exports = unique;
+
+
+
+},{"12":12}],18:[function(require,module,exports){
+
+
+    /**
+     * Returns the first argument provided to it.
+     */
+    function identity(val){
+        return val;
+    }
+
+    module.exports = identity;
+
+
+
+},{}],19:[function(require,module,exports){
+var identity = require(18);
+var prop = require(20);
+var deepMatches = require(24);
+
+    /**
+     * Converts argument into a valid iterator.
+     * Used internally on most array/object/collection methods that receives a
+     * callback/iterator providing a shortcut syntax.
+     */
+    function makeIterator(src, thisObj){
+        if (src == null) {
+            return identity;
+        }
+        switch(typeof src) {
+            case 'function':
+                // function is the first to improve perf (most common case)
+                // also avoid using `Function#call` if not needed, which boosts
+                // perf a lot in some cases
+                return (typeof thisObj !== 'undefined')? function(val, i, arr){
+                    return src.call(thisObj, val, i, arr);
+                } : src;
+            case 'object':
+                return function(val){
+                    return deepMatches(val, src);
+                };
+            case 'string':
+            case 'number':
+                return prop(src);
+        }
+    }
+
+    module.exports = makeIterator;
+
+
+
+},{"18":18,"20":20,"24":24}],20:[function(require,module,exports){
+
+
+    /**
+     * Returns a function that gets a property of the passed object
+     */
+    function prop(name){
+        return function(obj){
+            return obj[name];
+        };
+    }
+
+    module.exports = prop;
+
+
+
+},{}],21:[function(require,module,exports){
+var isKind = require(22);
+    /**
+     */
+    var isArray = Array.isArray || function (val) {
+        return isKind(val, 'Array');
+    };
+    module.exports = isArray;
+
+
+},{"22":22}],22:[function(require,module,exports){
+var kindOf = require(23);
+    /**
+     * Check if value is from a specific "kind".
+     */
+    function isKind(val, kind){
+        return kindOf(val) === kind;
+    }
+    module.exports = isKind;
+
+
+},{"23":23}],23:[function(require,module,exports){
+
+
+    var _rKind = /^\[object (.*)\]$/,
+        _toString = Object.prototype.toString,
+        UNDEF;
+
+    /**
+     * Gets the "kind" of value. (e.g. "String", "Number", etc)
+     */
+    function kindOf(val) {
+        if (val === null) {
+            return 'Null';
+        } else if (val === UNDEF) {
+            return 'Undefined';
+        } else {
+            return _rKind.exec( _toString.call(val) )[1];
+        }
+    }
+    module.exports = kindOf;
+
+
+},{}],24:[function(require,module,exports){
+var forOwn = require(26);
+var isArray = require(21);
+
+    function containsMatch(array, pattern) {
+        var i = -1, length = array.length;
+        while (++i < length) {
+            if (deepMatches(array[i], pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function matchArray(target, pattern) {
+        var i = -1, patternLength = pattern.length;
+        while (++i < patternLength) {
+            if (!containsMatch(target, pattern[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function matchObject(target, pattern) {
+        var result = true;
+        forOwn(pattern, function(val, key) {
+            if (!deepMatches(target[key], val)) {
+                // Return false to break out of forOwn early
+                return (result = false);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Recursively check if the objects match.
+     */
+    function deepMatches(target, pattern){
+        if (target && typeof target === 'object') {
+            if (isArray(target) && isArray(pattern)) {
+                return matchArray(target, pattern);
+            } else {
+                return matchObject(target, pattern);
+            }
+        } else {
+            return target === pattern;
+        }
+    }
+
+    module.exports = deepMatches;
+
+
+
+},{"21":21,"26":26}],25:[function(require,module,exports){
+var hasOwn = require(27);
+
+    var _hasDontEnumBug,
+        _dontEnums;
+
+    function checkDontEnum(){
+        _dontEnums = [
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ];
+
+        _hasDontEnumBug = true;
+
+        for (var key in {'toString': null}) {
+            _hasDontEnumBug = false;
+        }
+    }
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forIn(obj, fn, thisObj){
+        var key, i = 0;
+        // no need to check if argument is a real object that way we can use
+        // it for arrays, functions, date, etc.
+
+        //post-pone check till needed
+        if (_hasDontEnumBug == null) checkDontEnum();
+
+        for (key in obj) {
+            if (exec(fn, obj, key, thisObj) === false) {
+                break;
+            }
+        }
+
+
+        if (_hasDontEnumBug) {
+            var ctor = obj.constructor,
+                isProto = !!ctor && obj === ctor.prototype;
+
+            while (key = _dontEnums[i++]) {
+                // For constructor, if it is a prototype object the constructor
+                // is always non-enumerable unless defined otherwise (and
+                // enumerated above).  For non-prototype objects, it will have
+                // to be defined on this object, since it cannot be defined on
+                // any prototype objects.
+                //
+                // For other [[DontEnum]] properties, check if the value is
+                // different than Object prototype value.
+                if (
+                    (key !== 'constructor' ||
+                        (!isProto && hasOwn(obj, key))) &&
+                    obj[key] !== Object.prototype[key]
+                ) {
+                    if (exec(fn, obj, key, thisObj) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function exec(fn, obj, key, thisObj){
+        return fn.call(thisObj, obj[key], key, obj);
+    }
+
+    module.exports = forIn;
+
+
+
+},{"27":27}],26:[function(require,module,exports){
+var hasOwn = require(27);
+var forIn = require(25);
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forOwn(obj, fn, thisObj){
+        forIn(obj, function(val, key){
+            if (hasOwn(obj, key)) {
+                return fn.call(thisObj, obj[key], key, obj);
+            }
+        });
+    }
+
+    module.exports = forOwn;
+
+
+
+},{"25":25,"27":27}],27:[function(require,module,exports){
+
+
+    /**
+     * Safer Object.hasOwnProperty
+     */
+     function hasOwn(obj, prop){
+         return Object.prototype.hasOwnProperty.call(obj, prop);
+     }
+
+     module.exports = hasOwn;
+
+
+
 },{}]},{},[5])(5)
 });
