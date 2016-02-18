@@ -29,8 +29,8 @@
 			var $elEmptyContent = $('<div class="Banner" data-ad-id="new-ad-empty-content"></div>');
 			$('body').append($el);
 			$('body').append($elEmptyContent);
-			lazyads.addElement($el);
-			lazyads.addElement($elEmptyContent);
+			lazyads.addPlaceholder($el);
+			lazyads.addPlaceholder($elEmptyContent);
 		});
 
 		var lazyads = new $.kist.Lazyads({
