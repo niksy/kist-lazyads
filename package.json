@@ -59,8 +59,7 @@
     }
   },
   "scripts": {
-    "test": "grunt lint test",
-    "postinstall": "if command -v bower >/dev/null 2>&1; then bower install; fi",
+    "test": "bower install && grunt lint test",
     "version": "grunt update_json && grunt build && git add -A"
   },
   "repository": {
