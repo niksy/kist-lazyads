@@ -131,16 +131,22 @@ HTML clasess for DOM elements.
 }
 ```
 
+#### adapter
+
+Type: `Adapter`
+
+Adapter for banner system (e.g. Revive Ads, Google DFP, …).
+
 ### `.init(cb)`
 
-Type: `Function`  
+Type: `Function`
 Returns: `Lazyads`
 
 Initializes ad manager. **This method must be called**, either after setting up control, or after creating instance.
 
 ### `.control(options)`
 
-Type: `Function`  
+Type: `Function`
 Returns: `Lazyads`
 
 Provides individual control of ads based on specific conditions. Available options are:
@@ -153,7 +159,7 @@ Name of control. Options with same name will be merged.
 
 #### condition
 
-Type: `Function`  
+Type: `Function`
 
 Condition on which `callback` method of current control will be run.
 
@@ -175,7 +181,7 @@ Callback to run when condition is true.
 
 ### `.addPlaceholder(el)`
 
-Type: `Function`  
+Type: `Function`
 Returns: `Lazyads`
 
 Dynamically creates placeholder for ad. Useful if you don’t want to display specific ad on Lazyads initialization.
@@ -195,7 +201,7 @@ Iterates over every control entry and fires callback if condition is satisifed.
 
 ### `.destroy()`
 
-Type: `Function`  
+Type: `Function`
 Returns: `Lazyads`
 
 Destroys current Lazyads instance.
