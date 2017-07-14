@@ -1,4 +1,4 @@
-/*! kist-lazyads 0.5.0-2 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
+/*! kist-lazyads 0.5.0-3 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
@@ -32,26 +32,28 @@ Adapter.prototype.onBannersInit = function ( banners ) {};
 Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
+ * @param  {Banner}   banner
  * @param  {String}   content
  * @param  {Function} cb
  */
-Adapter.prototype.writeBannerContent = function ( content, cb ) {
+Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
 
+	var bannerCtx = banner;
 	cb = cb || $.noop;
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
-	if ( this.emptyContentFilter(content) ) {
-		this.$el.html(content);
-		successEmpty.call(this, cb);
+	if ( bannerCtx.emptyContentFilter(content) ) {
+		bannerCtx.$el.html(content);
+		successEmpty.call(bannerCtx, cb);
 		return;
 	}
 
 	// If ad content doesn't need postscribe parse (and won't benefit from
 	// it's modifications), just dump it to the page
 	if ( /responsive_google_ad/.test(content) ) {
-		this.$el.html(content);
-		success.call(this, cb);
+		bannerCtx.$el.html(content);
+		success.call(bannerCtx, cb);
 		return;
 	}
 
@@ -60,12 +62,12 @@ Adapter.prototype.writeBannerContent = function ( content, cb ) {
 		$(content).filter('link').each($.proxy(function ( index, link ) {
 			var $stylesheet = $('<link rel="stylesheet" href="' + $(link).attr('href') + '" class="' + meta.ns.htmlClass + '-ieStyle" />');
 			$stylesheet.appendTo('head');
-			this.stylesheets.push($stylesheet);
-		}, this));
+			bannerCtx.stylesheets.push($stylesheet);
+		}, bannerCtx));
 	}
 
-	this.$el.empty();
-	postscribe(this.$el, content, $.proxy(success, this, cb));
+	bannerCtx.$el.empty();
+	postscribe(bannerCtx.$el, content, $.proxy(success, bannerCtx, cb));
 
 };
 
@@ -114,6 +116,7 @@ var Banner = module.exports = function ( name, el, classes, emptyContentFilter, 
 	this.isLoaded = false;
 	this.isContentEmpty = true;
 	this.stylesheets = [];
+	this.adapter = adapter;
 
 	// This should probably be defined as prototype method
 	this.emptyContentFilter = function () {
@@ -122,7 +125,6 @@ var Banner = module.exports = function ( name, el, classes, emptyContentFilter, 
 	this.alreadyLoadedFilter = function () {
 		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
 	};
-	this.write = $.proxy(adapter.writeBannerContent, this);
 
 	this.$el.addClass(this.classes.el);
 };
@@ -141,6 +143,14 @@ Banner.prototype.setAsLoaded = function () {
 
 Banner.prototype.setAsContentEmpty = function () {
 	this.$el.addClass(this.classes.isContentEmpty);
+};
+
+/**
+ * @param  {String}   content
+ * @param  {Function} cb
+ */
+Banner.prototype.write = function ( content, cb ) {
+	this.adapter.writeBannerContent(this, content, cb);
 };
 
 Banner.prototype.destroy = function () {
