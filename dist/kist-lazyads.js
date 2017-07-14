@@ -1,11 +1,9 @@
-/*! kist-lazyads 0.4.1 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2016 | License: MIT */
+/*! kist-lazyads 0.5.0-0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
-/* jshint maxparams:false */
-
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var postscribe = require(8);
-var meta = require(6);
+var postscribe = require(9);
+var meta = require(7);
 
 /**
  * @param  {Function} cb
@@ -28,61 +26,16 @@ function successEmpty ( cb ) {
 	cb.call(null, this.$el);
 }
 
-/**
- * @param  {String} name
- * @param  {jQuery} el
- * @param  {Object} classes
- * @param  {Function} emptyContentFilter
- * @param  {Function} alreadyLoadedFilter
- */
-var Banner = module.exports = function ( name, el, classes, emptyContentFilter, alreadyLoadedFilter ) {
+var Adapter = module.exports = function () {};
 
-	if ( !name ) {
-		throw new Error('Ad name is not provided.');
-	}
-	if ( !el ) {
-		throw new Error('Ad placeholder element is not provided.');
-	}
-
-	this.name = name;
-	this.$el = el;
-	this.classes = classes;
-	this.isLoaded = false;
-	this.isContentEmpty = true;
-	this.stylesheets = [];
-
-	// This should probably be defined as prototype method
-	this.emptyContentFilter = function () {
-		return Boolean(emptyContentFilter.apply(this.$el[0], arguments));
-	};
-	this.alreadyLoadedFilter = function () {
-		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
-	};
-
-	this.$el.addClass(this.classes.el);
-};
-
-Banner.prototype.show = function () {
-	this.$el.removeClass(this.classes.isHidden);
-};
-
-Banner.prototype.hide = function () {
-	this.$el.addClass(this.classes.isHidden);
-};
-
-Banner.prototype.setAsLoaded = function () {
-	this.$el.addClass(this.classes.isLoaded);
-};
-
-Banner.prototype.setAsContentEmpty = function () {
-	this.$el.addClass(this.classes.isContentEmpty);
-};
+Adapter.prototype.onBannersInit = function ( banners ) {};
+Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
  * @param  {String}   content
  * @param  {Function} cb
  */
-Banner.prototype.write = function ( content, cb ) {
+Adapter.prototype.writeBannerContent = function ( content, cb ) {
 
 	cb = cb || $.noop;
 
@@ -116,6 +69,80 @@ Banner.prototype.write = function ( content, cb ) {
 
 };
 
+/**
+ * If content object is empty, we don’t display ads, have
+ * ad blocker activated, etc., don’t do anything with ad system
+ *
+ * @param  {Object}  options
+ *
+ * @return {Boolean}
+ */
+Adapter.prototype.hasNecessaryInitData = function ( options ) {
+	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
+		return false;
+	}
+	return true;
+};
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"7":7,"9":9}],2:[function(require,module,exports){
+(function (global){
+/* jshint maxparams:false */
+
+var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+
+/**
+ * @param  {String} name
+ * @param  {jQuery} el
+ * @param  {Object} classes
+ * @param  {Function} emptyContentFilter
+ * @param  {Function} alreadyLoadedFilter
+ * @param  {Object} adapter
+ */
+var Banner = module.exports = function ( name, el, classes, emptyContentFilter, alreadyLoadedFilter, adapter ) {
+
+	if ( !name ) {
+		throw new Error('Ad name is not provided.');
+	}
+	if ( !el ) {
+		throw new Error('Ad placeholder element is not provided.');
+	}
+
+	this.name = name;
+	this.$el = el;
+	this.classes = classes;
+	this.isLoaded = false;
+	this.isContentEmpty = true;
+	this.stylesheets = [];
+
+	// This should probably be defined as prototype method
+	this.emptyContentFilter = function () {
+		return Boolean(emptyContentFilter.apply(this.$el[0], arguments));
+	};
+	this.alreadyLoadedFilter = function () {
+		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
+	};
+	this.write = $.proxy(adapter.writeBannerContent, this);
+
+	this.$el.addClass(this.classes.el);
+};
+
+Banner.prototype.show = function () {
+	this.$el.removeClass(this.classes.isHidden);
+};
+
+Banner.prototype.hide = function () {
+	this.$el.addClass(this.classes.isHidden);
+};
+
+Banner.prototype.setAsLoaded = function () {
+	this.$el.addClass(this.classes.isLoaded);
+};
+
+Banner.prototype.setAsContentEmpty = function () {
+	this.$el.addClass(this.classes.isContentEmpty);
+};
+
 Banner.prototype.destroy = function () {
 	this.$el.removeClass([this.classes.el, this.classes.isHidden, this.classes.isLoaded].join(' '));
 	$.each(this.stylesheets, function ( index, stylesheet ) {
@@ -124,13 +151,13 @@ Banner.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"6":6,"8":8}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var unique = require(17);
-var filter = require(12);
-var Banner = require(1);
-var Control = require(4);
+var unique = require(18);
+var filter = require(13);
+var Banner = require(2);
+var Control = require(5);
 
 /**
  * @param  {Object} contexts
@@ -157,6 +184,7 @@ var Banners = module.exports = function ( el, options ) {
 	this.list = getBannersFromContexts(options.context);
 
 	this.add(this.createBanners($(el)));
+	this.options.adapter.onBannersInit(this.banners);
 
 };
 
@@ -181,7 +209,7 @@ Banners.prototype.createBanners = function ( $el ) {
 	// Create Banner instances based on new banner elements
 	var banners = $.map($newEl, $.proxy(function ( el ) {
 		var $el = $(el);
-		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter, this.options.adapter);
 	}, this));
 
 	// Initialize empty content banners
@@ -319,6 +347,8 @@ Banners.prototype.write = function ( arr ) {
 
 	}, this));
 
+	this.options.adapter.afterBannersWrite(banners);
+
 };
 
 Banners.prototype.destroy = function () {
@@ -329,11 +359,11 @@ Banners.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"1":1,"12":12,"17":17,"4":4}],3:[function(require,module,exports){
+},{"13":13,"18":18,"2":2,"5":5}],4:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var intersection = require(14);
-var difference = require(10);
+var intersection = require(15);
+var difference = require(11);
 
 /**
  * @param  {Object}  contexts
@@ -466,7 +496,7 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"10":10,"14":14}],4:[function(require,module,exports){
+},{"11":11,"15":15}],5:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
 
@@ -567,28 +597,13 @@ Control.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var meta = require(6);
-var Banners = require(2);
-var Context = require(3);
-
-/**
- *
- * If content object is empty, we don’t display ads, have
- * ad blocker activated, etc., don’t do anything with ad system
- *
- * @param  {Object}  options
- *
- * @return {Boolean}
- */
-function hasNecessaryData ( options ) {
-	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
-		return false;
-	}
-	return true;
-}
+var meta = require(7);
+var Banners = require(3);
+var Context = require(4);
+var ReviveAdsAdapter = require(1);
 
 /**
  * @class
@@ -599,7 +614,11 @@ var Lazyads = module.exports = function ( options ) {
 
 	this.options = $.extend(true, {}, this.defaults, options);
 
-	if ( !hasNecessaryData(this.options) ) {
+	if ( this.options.adapter === null ) {
+		this.options.adapter = new ReviveAdsAdapter();
+	}
+
+	if ( !this.options.adapter.hasNecessaryInitData(this.options) ) {
 		return this;
 	}
 
@@ -617,6 +636,7 @@ Lazyads.prototype.defaults = {
 	context: {},
 	content: {},
 	contentIdDataProp: 'ad-id',
+	adapter: null,
 
 	/**
 	 * @param  {jQuery} $el
@@ -651,7 +671,7 @@ Lazyads.prototype.defaults = {
  */
 Lazyads.prototype.init = function ( cb ) {
 	cb = cb || $.noop;
-	if ( hasNecessaryData(this.options) && !this.active ) {
+	if ( this.options.adapter.hasNecessaryInitData(this.options) && !this.active ) {
 		this.active = true;
 		this.context.init();
 		cb.call(this.options);
@@ -665,7 +685,7 @@ Lazyads.prototype.init = function ( cb ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.control = function ( props ) {
-	if ( hasNecessaryData(this.options) ) {
+	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
 		this.banners.control.add(props);
 	}
 	return this;
@@ -675,7 +695,7 @@ Lazyads.prototype.control = function ( props ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.recheckControl = function () {
-	if ( hasNecessaryData(this.options) ) {
+	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
 		$.each(this.banners, $.proxy(function ( index, banner ) {
 			this.banners.control.resolve(banner);
 		}, this));
@@ -689,7 +709,7 @@ Lazyads.prototype.recheckControl = function () {
  * @return {Lazyads}
  */
 Lazyads.prototype.addPlaceholder = function ( el ) {
-	if ( hasNecessaryData(this.options) ) {
+	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
 		var banners = this.banners.add(this.banners.createBanners($(el)));
 		var list = $.map(banners, function ( banner ) {
 			return banner.name;
@@ -703,7 +723,7 @@ Lazyads.prototype.addPlaceholder = function ( el ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.destroy = function () {
-	if ( hasNecessaryData(this.options) ) {
+	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
 		this.banners.destroy();
 		this.context.destroy();
 		this.banners = null;
@@ -714,7 +734,7 @@ Lazyads.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"2":2,"3":3,"6":6}],6:[function(require,module,exports){
+},{"1":1,"3":3,"4":4,"7":7}],7:[function(require,module,exports){
 module.exports = {
 	name: 'lazyads',
 	ns: {
@@ -722,7 +742,7 @@ module.exports = {
 	}
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -1094,10 +1114,10 @@ module.exports = {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(7);
+; htmlParser = global.htmlParser = require(8);
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
@@ -1803,8 +1823,8 @@ module.exports = {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"7":7}],9:[function(require,module,exports){
-var indexOf = require(13);
+},{"8":8}],10:[function(require,module,exports){
+var indexOf = require(14);
 
     /**
      * If array contains values.
@@ -1815,12 +1835,12 @@ var indexOf = require(13);
     module.exports = contains;
 
 
-},{"13":13}],10:[function(require,module,exports){
-var unique = require(17);
-var filter = require(12);
-var some = require(16);
-var contains = require(9);
-var slice = require(15);
+},{"14":14}],11:[function(require,module,exports){
+var unique = require(18);
+var filter = require(13);
+var some = require(17);
+var contains = require(10);
+var slice = require(16);
 
 
     /**
@@ -1840,8 +1860,8 @@ var slice = require(15);
 
 
 
-},{"12":12,"15":15,"16":16,"17":17,"9":9}],11:[function(require,module,exports){
-var makeIterator = require(19);
+},{"10":10,"13":13,"16":16,"17":17,"18":18}],12:[function(require,module,exports){
+var makeIterator = require(20);
 
     /**
      * Array every
@@ -1869,8 +1889,8 @@ var makeIterator = require(19);
     module.exports = every;
 
 
-},{"19":19}],12:[function(require,module,exports){
-var makeIterator = require(19);
+},{"20":20}],13:[function(require,module,exports){
+var makeIterator = require(20);
 
     /**
      * Array filter
@@ -1897,7 +1917,7 @@ var makeIterator = require(19);
 
 
 
-},{"19":19}],13:[function(require,module,exports){
+},{"20":20}],14:[function(require,module,exports){
 
 
     /**
@@ -1927,12 +1947,12 @@ var makeIterator = require(19);
     module.exports = indexOf;
 
 
-},{}],14:[function(require,module,exports){
-var unique = require(17);
-var filter = require(12);
-var every = require(11);
-var contains = require(9);
-var slice = require(15);
+},{}],15:[function(require,module,exports){
+var unique = require(18);
+var filter = require(13);
+var every = require(12);
+var contains = require(10);
+var slice = require(16);
 
 
     /**
@@ -1953,7 +1973,7 @@ var slice = require(15);
 
 
 
-},{"11":11,"12":12,"15":15,"17":17,"9":9}],15:[function(require,module,exports){
+},{"10":10,"12":12,"13":13,"16":16,"18":18}],16:[function(require,module,exports){
 
 
     /**
@@ -1990,8 +2010,8 @@ var slice = require(15);
 
 
 
-},{}],16:[function(require,module,exports){
-var makeIterator = require(19);
+},{}],17:[function(require,module,exports){
+var makeIterator = require(20);
 
     /**
      * Array some
@@ -2019,8 +2039,8 @@ var makeIterator = require(19);
     module.exports = some;
 
 
-},{"19":19}],17:[function(require,module,exports){
-var filter = require(12);
+},{"20":20}],18:[function(require,module,exports){
+var filter = require(13);
 
     /**
      * @return {array} Array of unique items
@@ -2046,7 +2066,7 @@ var filter = require(12);
 
 
 
-},{"12":12}],18:[function(require,module,exports){
+},{"13":13}],19:[function(require,module,exports){
 
 
     /**
@@ -2060,10 +2080,10 @@ var filter = require(12);
 
 
 
-},{}],19:[function(require,module,exports){
-var identity = require(18);
-var prop = require(20);
-var deepMatches = require(24);
+},{}],20:[function(require,module,exports){
+var identity = require(19);
+var prop = require(21);
+var deepMatches = require(25);
 
     /**
      * Converts argument into a valid iterator.
@@ -2096,7 +2116,7 @@ var deepMatches = require(24);
 
 
 
-},{"18":18,"20":20,"24":24}],20:[function(require,module,exports){
+},{"19":19,"21":21,"25":25}],21:[function(require,module,exports){
 
 
     /**
@@ -2112,8 +2132,8 @@ var deepMatches = require(24);
 
 
 
-},{}],21:[function(require,module,exports){
-var isKind = require(22);
+},{}],22:[function(require,module,exports){
+var isKind = require(23);
     /**
      */
     var isArray = Array.isArray || function (val) {
@@ -2122,8 +2142,8 @@ var isKind = require(22);
     module.exports = isArray;
 
 
-},{"22":22}],22:[function(require,module,exports){
-var kindOf = require(23);
+},{"23":23}],23:[function(require,module,exports){
+var kindOf = require(24);
     /**
      * Check if value is from a specific "kind".
      */
@@ -2133,7 +2153,7 @@ var kindOf = require(23);
     module.exports = isKind;
 
 
-},{"23":23}],23:[function(require,module,exports){
+},{"24":24}],24:[function(require,module,exports){
 
 
     var _rKind = /^\[object (.*)\]$/,
@@ -2155,9 +2175,9 @@ var kindOf = require(23);
     module.exports = kindOf;
 
 
-},{}],24:[function(require,module,exports){
-var forOwn = require(26);
-var isArray = require(21);
+},{}],25:[function(require,module,exports){
+var forOwn = require(27);
+var isArray = require(22);
 
     function containsMatch(array, pattern) {
         var i = -1, length = array.length;
@@ -2212,8 +2232,8 @@ var isArray = require(21);
 
 
 
-},{"21":21,"26":26}],25:[function(require,module,exports){
-var hasOwn = require(27);
+},{"22":22,"27":27}],26:[function(require,module,exports){
+var hasOwn = require(28);
 
     var _hasDontEnumBug,
         _dontEnums;
@@ -2290,9 +2310,9 @@ var hasOwn = require(27);
 
 
 
-},{"27":27}],26:[function(require,module,exports){
-var hasOwn = require(27);
-var forIn = require(25);
+},{"28":28}],27:[function(require,module,exports){
+var hasOwn = require(28);
+var forIn = require(26);
 
     /**
      * Similar to Array/forEach but works over object properties and fixes Don't
@@ -2311,7 +2331,7 @@ var forIn = require(25);
 
 
 
-},{"25":25,"27":27}],27:[function(require,module,exports){
+},{"26":26,"28":28}],28:[function(require,module,exports){
 
 
     /**
@@ -2325,5 +2345,5 @@ var forIn = require(25);
 
 
 
-},{}]},{},[5])(5)
+},{}]},{},[6])(6)
 });
