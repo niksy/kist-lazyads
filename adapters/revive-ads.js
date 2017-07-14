@@ -29,26 +29,28 @@ Adapter.prototype.onBannersInit = function ( banners ) {};
 Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
+ * @param  {Banner}   banner
  * @param  {String}   content
  * @param  {Function} cb
  */
-Adapter.prototype.writeBannerContent = function ( content, cb ) {
+Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
 
+	var bannerCtx = banner;
 	cb = cb || $.noop;
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
-	if ( this.emptyContentFilter(content) ) {
-		this.$el.html(content);
-		successEmpty.call(this, cb);
+	if ( bannerCtx.emptyContentFilter(content) ) {
+		bannerCtx.$el.html(content);
+		successEmpty.call(bannerCtx, cb);
 		return;
 	}
 
 	// If ad content doesn't need postscribe parse (and won't benefit from
 	// it's modifications), just dump it to the page
 	if ( /responsive_google_ad/.test(content) ) {
-		this.$el.html(content);
-		success.call(this, cb);
+		bannerCtx.$el.html(content);
+		success.call(bannerCtx, cb);
 		return;
 	}
 
@@ -57,12 +59,12 @@ Adapter.prototype.writeBannerContent = function ( content, cb ) {
 		$(content).filter('link').each($.proxy(function ( index, link ) {
 			var $stylesheet = $('<link rel="stylesheet" href="' + $(link).attr('href') + '" class="' + meta.ns.htmlClass + '-ieStyle" />');
 			$stylesheet.appendTo('head');
-			this.stylesheets.push($stylesheet);
-		}, this));
+			bannerCtx.stylesheets.push($stylesheet);
+		}, bannerCtx));
 	}
 
-	this.$el.empty();
-	postscribe(this.$el, content, $.proxy(success, this, cb));
+	bannerCtx.$el.empty();
+	postscribe(bannerCtx.$el, content, $.proxy(success, bannerCtx, cb));
 
 };
 
