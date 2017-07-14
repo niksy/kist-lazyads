@@ -76,7 +76,7 @@ This will inject `ad1` content inside element with `data-ad-id="ad1"`
 
 #### alreadyLoadedFilter
 
-Type: `Function`
+Type: `Function`  
 Returns: `Boolean`
 
 By default, banners are considered not loaded until Lazyads is initialized. You may have some banners which already have some content before initialization (e.g. you may be using synchronous delivery for specific banners). Using this filter you can check for those banners and flag them as loaded at start.
@@ -95,7 +95,7 @@ By default, banners are considered not loaded until Lazyads is initialized. You 
 
 #### emptyContentFilter
 
-Type: `Function`
+Type: `Function`  
 Returns: `Boolean`
 
 By default, banner is considered empty if it returns (trimmed) empty string for its content. Filter can be used to set custom test for content emptyness. It should return `true` if content is empty.
@@ -139,14 +139,14 @@ Adapter for banner system (e.g. Revive Ads, Google DFP, …).
 
 ### `.init(cb)`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Initializes ad manager. **This method must be called**, either after setting up control, or after creating instance.
 
 ### `.control(options)`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Provides individual control of ads based on specific conditions. Available options are:
@@ -181,7 +181,7 @@ Callback to run when condition is true.
 
 ### `.addPlaceholder(el)`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Dynamically creates placeholder for ad. Useful if you don’t want to display specific ad on Lazyads initialization.
@@ -194,14 +194,14 @@ Element which will contain ad content. String should be valid CSS selector.
 
 ### `.recheckControl()`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Iterates over every control entry and fires callback if condition is satisifed.
 
 ### `.destroy()`
 
-Type: `Function`
+Type: `Function`  
 Returns: `Lazyads`
 
 Destroys current Lazyads instance.
