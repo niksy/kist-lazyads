@@ -1,8 +1,8 @@
-/*! kist-lazyads 0.5.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
+/*! kist-lazyads 0.6.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var postscribe = require(9);
+var postscribe = require(10);
 var meta = require(7);
 
 /**
@@ -87,7 +87,7 @@ Adapter.prototype.hasNecessaryInitData = function ( options ) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"7":7,"9":9}],2:[function(require,module,exports){
+},{"10":10,"7":7}],2:[function(require,module,exports){
 (function (global){
 /* jshint maxparams:false */
 
@@ -164,8 +164,8 @@ Banner.prototype.destroy = function () {
 },{}],3:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var unique = require(18);
-var filter = require(13);
+var unique = require(19);
+var filter = require(14);
 var Banner = require(2);
 var Control = require(5);
 
@@ -369,11 +369,11 @@ Banners.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"13":13,"18":18,"2":2,"5":5}],4:[function(require,module,exports){
+},{"14":14,"19":19,"2":2,"5":5}],4:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
-var intersection = require(15);
-var difference = require(11);
+var intersection = require(16);
+var difference = require(12);
 
 /**
  * @param  {Object}  contexts
@@ -506,9 +506,10 @@ Context.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"11":11,"15":15}],5:[function(require,module,exports){
+},{"12":12,"16":16}],5:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
+var isPromise = require(8);
 
 /**
  * @param  {jQuery} el
@@ -595,8 +596,17 @@ Control.prototype.resolve = function ( banner ) {
 	var $banner = banner.$el;
 
 	$.each(controls, $.proxy(function ( index, control ) {
-		if ( Boolean(control.condition.call($banner[0], $banner)) ) {
-			control.callback.call($banner[0], $banner, emit($banner, control.name), waitForLayout(this));
+		var condition = control.condition.call($banner[0], $banner);
+		if ( isPromise(condition) ) {
+			condition.then($.proxy(function ( bool ) {
+				if ( bool ) {
+					control.callback.call($banner[0], $banner, emit($banner, control.name), waitForLayout(this));
+				}
+			}, this));
+		} else {
+			if ( Boolean(condition) ) {
+				control.callback.call($banner[0], $banner, emit($banner, control.name), waitForLayout(this));
+			}
 		}
 	}, this));
 
@@ -607,7 +617,7 @@ Control.prototype.destroy = function () {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{"8":8}],6:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
 var meta = require(7);
@@ -753,6 +763,13 @@ module.exports = {
 };
 
 },{}],8:[function(require,module,exports){
+module.exports = isPromise;
+
+function isPromise(obj) {
+  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
+}
+
+},{}],9:[function(require,module,exports){
 (function (global){
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 // An html parser written in JavaScript
@@ -1124,10 +1141,10 @@ module.exports = {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global){
 
-; htmlParser = global.htmlParser = require(8);
+; htmlParser = global.htmlParser = require(9);
 ; var __browserify_shim_require__=require;(function browserifyShim(module, exports, require, define, browserify_shim__define__module__export__) {
 //     postscribe.js 1.3.2
 //     (c) Copyright 2012 to the present, Krux
@@ -1833,8 +1850,8 @@ module.exports = {
 }).call(global, undefined, undefined, undefined, undefined, function defineExport(ex) { module.exports = ex; });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"8":8}],10:[function(require,module,exports){
-var indexOf = require(14);
+},{"9":9}],11:[function(require,module,exports){
+var indexOf = require(15);
 
     /**
      * If array contains values.
@@ -1845,12 +1862,12 @@ var indexOf = require(14);
     module.exports = contains;
 
 
-},{"14":14}],11:[function(require,module,exports){
-var unique = require(18);
-var filter = require(13);
-var some = require(17);
-var contains = require(10);
-var slice = require(16);
+},{"15":15}],12:[function(require,module,exports){
+var unique = require(19);
+var filter = require(14);
+var some = require(18);
+var contains = require(11);
+var slice = require(17);
 
 
     /**
@@ -1870,8 +1887,8 @@ var slice = require(16);
 
 
 
-},{"10":10,"13":13,"16":16,"17":17,"18":18}],12:[function(require,module,exports){
-var makeIterator = require(20);
+},{"11":11,"14":14,"17":17,"18":18,"19":19}],13:[function(require,module,exports){
+var makeIterator = require(21);
 
     /**
      * Array every
@@ -1899,8 +1916,8 @@ var makeIterator = require(20);
     module.exports = every;
 
 
-},{"20":20}],13:[function(require,module,exports){
-var makeIterator = require(20);
+},{"21":21}],14:[function(require,module,exports){
+var makeIterator = require(21);
 
     /**
      * Array filter
@@ -1927,7 +1944,7 @@ var makeIterator = require(20);
 
 
 
-},{"20":20}],14:[function(require,module,exports){
+},{"21":21}],15:[function(require,module,exports){
 
 
     /**
@@ -1957,12 +1974,12 @@ var makeIterator = require(20);
     module.exports = indexOf;
 
 
-},{}],15:[function(require,module,exports){
-var unique = require(18);
-var filter = require(13);
-var every = require(12);
-var contains = require(10);
-var slice = require(16);
+},{}],16:[function(require,module,exports){
+var unique = require(19);
+var filter = require(14);
+var every = require(13);
+var contains = require(11);
+var slice = require(17);
 
 
     /**
@@ -1983,7 +2000,7 @@ var slice = require(16);
 
 
 
-},{"10":10,"12":12,"13":13,"16":16,"18":18}],16:[function(require,module,exports){
+},{"11":11,"13":13,"14":14,"17":17,"19":19}],17:[function(require,module,exports){
 
 
     /**
@@ -2020,8 +2037,8 @@ var slice = require(16);
 
 
 
-},{}],17:[function(require,module,exports){
-var makeIterator = require(20);
+},{}],18:[function(require,module,exports){
+var makeIterator = require(21);
 
     /**
      * Array some
@@ -2049,8 +2066,8 @@ var makeIterator = require(20);
     module.exports = some;
 
 
-},{"20":20}],18:[function(require,module,exports){
-var filter = require(13);
+},{"21":21}],19:[function(require,module,exports){
+var filter = require(14);
 
     /**
      * @return {array} Array of unique items
@@ -2076,7 +2093,7 @@ var filter = require(13);
 
 
 
-},{"13":13}],19:[function(require,module,exports){
+},{"14":14}],20:[function(require,module,exports){
 
 
     /**
@@ -2090,10 +2107,10 @@ var filter = require(13);
 
 
 
-},{}],20:[function(require,module,exports){
-var identity = require(19);
-var prop = require(21);
-var deepMatches = require(25);
+},{}],21:[function(require,module,exports){
+var identity = require(20);
+var prop = require(22);
+var deepMatches = require(26);
 
     /**
      * Converts argument into a valid iterator.
@@ -2126,7 +2143,7 @@ var deepMatches = require(25);
 
 
 
-},{"19":19,"21":21,"25":25}],21:[function(require,module,exports){
+},{"20":20,"22":22,"26":26}],22:[function(require,module,exports){
 
 
     /**
@@ -2142,8 +2159,8 @@ var deepMatches = require(25);
 
 
 
-},{}],22:[function(require,module,exports){
-var isKind = require(23);
+},{}],23:[function(require,module,exports){
+var isKind = require(24);
     /**
      */
     var isArray = Array.isArray || function (val) {
@@ -2152,8 +2169,8 @@ var isKind = require(23);
     module.exports = isArray;
 
 
-},{"23":23}],23:[function(require,module,exports){
-var kindOf = require(24);
+},{"24":24}],24:[function(require,module,exports){
+var kindOf = require(25);
     /**
      * Check if value is from a specific "kind".
      */
@@ -2163,7 +2180,7 @@ var kindOf = require(24);
     module.exports = isKind;
 
 
-},{"24":24}],24:[function(require,module,exports){
+},{"25":25}],25:[function(require,module,exports){
 
 
     var _rKind = /^\[object (.*)\]$/,
@@ -2185,9 +2202,9 @@ var kindOf = require(24);
     module.exports = kindOf;
 
 
-},{}],25:[function(require,module,exports){
-var forOwn = require(27);
-var isArray = require(22);
+},{}],26:[function(require,module,exports){
+var forOwn = require(28);
+var isArray = require(23);
 
     function containsMatch(array, pattern) {
         var i = -1, length = array.length;
@@ -2242,8 +2259,8 @@ var isArray = require(22);
 
 
 
-},{"22":22,"27":27}],26:[function(require,module,exports){
-var hasOwn = require(28);
+},{"23":23,"28":28}],27:[function(require,module,exports){
+var hasOwn = require(29);
 
     var _hasDontEnumBug,
         _dontEnums;
@@ -2320,9 +2337,9 @@ var hasOwn = require(28);
 
 
 
-},{"28":28}],27:[function(require,module,exports){
-var hasOwn = require(28);
-var forIn = require(26);
+},{"29":29}],28:[function(require,module,exports){
+var hasOwn = require(29);
+var forIn = require(27);
 
     /**
      * Similar to Array/forEach but works over object properties and fixes Don't
@@ -2341,7 +2358,7 @@ var forIn = require(26);
 
 
 
-},{"26":26,"28":28}],28:[function(require,module,exports){
+},{"27":27,"29":29}],29:[function(require,module,exports){
 
 
     /**
