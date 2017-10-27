@@ -51,7 +51,8 @@ module.exports = function ( grunt ) {
 			},
 			standalone: {
 				options: {
-					plugin: ['bundle-collapser/plugin']
+					plugin: ['bundle-collapser/plugin'],
+					transform: [['browserify-shim', { global: true }]]
 				},
 				files: {
 					'compiled/<%= pkg.main %>': ['<%= pkg.main %>']

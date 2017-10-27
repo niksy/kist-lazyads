@@ -1,5 +1,5 @@
 var $ = require('jquery');
-var postscribe = require('krux-postscribe');
+var postscribe = require('postscribe');
 var meta = require('../lib/meta');
 
 /**
@@ -65,7 +65,9 @@ Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
 	}
 
 	bannerCtx.$el.empty();
-	postscribe(bannerCtx.$el, content, $.proxy(success, bannerCtx, cb));
+	postscribe(bannerCtx.$el, content, {
+		done: $.proxy(success, bannerCtx, cb)
+	});
 
 };
 
