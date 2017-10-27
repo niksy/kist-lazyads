@@ -59,8 +59,8 @@
     }
   },
   "scripts": {
-    "test": "bower install && grunt lint test",
-    "version": "grunt update_json && grunt build && git add -A"
+    "version": "grunt update_json && grunt build && git add -A",
+    "test": "bower install && grunt test"
   },
   "repository": {
     "type": "git",

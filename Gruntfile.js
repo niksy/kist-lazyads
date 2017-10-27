@@ -31,20 +31,6 @@ module.exports = function ( grunt ) {
 			}
 		},
 
-		bump: {
-			options: {
-				files: ['package.json', 'bower.json'],
-				updateConfigs: ['pkg'],
-				commit: true,
-				commitMessage: 'Release %VERSION%',
-				commitFiles: ['-a'],
-				createTag: true,
-				tagName: '%VERSION%',
-				tagMessage: '',
-				push: false
-			}
-		},
-
 		jshint: {
 			main: {
 				options: {
@@ -159,6 +145,6 @@ module.exports = function ( grunt ) {
 	});
 
 	grunt.registerTask('lint', ['jshint:main']);
-	grunt.registerTask('build', ['browserify:standalone', 'concat', 'uglify']);
+	grunt.registerTask('build', ['lint', 'browserify:standalone', 'concat', 'uglify']);
 
 };
