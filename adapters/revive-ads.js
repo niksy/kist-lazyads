@@ -26,6 +26,7 @@ function successEmpty ( cb ) {
 var Adapter = module.exports = function () {};
 
 Adapter.prototype.onBannersInit = function ( banners ) {};
+Adapter.prototype.beforeBannersWrite = function ( banners ) {};
 Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
