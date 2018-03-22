@@ -1,4 +1,4 @@
-/*! kist-lazyads 0.7.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2017 | License: MIT */
+/*! kist-lazyads 0.8.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2018 | License: MIT */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
@@ -44,7 +44,7 @@ Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
-	if ( bannerCtx.emptyContentFilter(content) ) {
+	if ( this.isResponseEmpty(content) ) {
 		bannerCtx.$el.html(content);
 		successEmpty.call(bannerCtx, cb);
 		return;
@@ -89,6 +89,21 @@ Adapter.prototype.hasNecessaryInitData = function ( options ) {
 	return true;
 };
 
+/**
+ * Banner response is considered empty if it returns (trimmed) empty string for its content.
+ * It should return `true` if content is empty.
+ *
+ * @param  {Mixed} content
+ *
+ * @return {Boolean}
+ */
+Adapter.prototype.isResponseEmpty = function ( content ) {
+	if ( typeof content === 'string' ) {
+		return content.trim() === '' || /bannerid=0&amp;campaignid=0/.test(content);
+	}
+	return false;
+};
+
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"28":28,"7":7}],2:[function(require,module,exports){
 (function (global){
@@ -100,11 +115,10 @@ var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefi
  * @param  {String} name
  * @param  {jQuery} el
  * @param  {Object} classes
- * @param  {Function} emptyContentFilter
  * @param  {Function} alreadyLoadedFilter
  * @param  {Object} adapter
  */
-var Banner = module.exports = function ( name, el, classes, emptyContentFilter, alreadyLoadedFilter, adapter ) {
+var Banner = module.exports = function ( name, el, classes, alreadyLoadedFilter, adapter ) {
 
 	if ( !name ) {
 		throw new Error('Ad name is not provided.');
@@ -121,10 +135,6 @@ var Banner = module.exports = function ( name, el, classes, emptyContentFilter, 
 	this.stylesheets = [];
 	this.adapter = adapter;
 
-	// This should probably be defined as prototype method
-	this.emptyContentFilter = function () {
-		return Boolean(emptyContentFilter.apply(this.$el[0], arguments));
-	};
 	this.alreadyLoadedFilter = function () {
 		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
 	};
@@ -146,6 +156,14 @@ Banner.prototype.setAsLoaded = function () {
 
 Banner.prototype.setAsContentEmpty = function () {
 	this.$el.addClass(this.classes.isContentEmpty);
+};
+
+Banner.prototype.resolveAlreadyLoadedState = function () {
+	if ( !this.isLoaded && this.alreadyLoadedFilter(this.$el) ) {
+		this.setAsLoaded();
+		this.isLoaded = true;
+		this.isContentEmpty = false;
+	}
 };
 
 /**
@@ -222,31 +240,27 @@ Banners.prototype.createBanners = function ( $el ) {
 	// Create Banner instances based on new banner elements
 	var banners = $.map($newEl, $.proxy(function ( el ) {
 		var $el = $(el);
-		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.emptyContentFilter, this.options.alreadyLoadedFilter, this.options.adapter);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.alreadyLoadedFilter, this.options.adapter);
 	}, this));
 
 	// Initialize empty content banners
-	$.each(this.content, function ( name, val ) {
+	$.each(this.content, $.proxy(function ( name, val ) {
 
 		var banner = filter(banners, function ( banner ) {
 			return banner.name === name;
 		})[0];
 
 		// If banner element for that ad actually exists on page and has empty content
-		if ( banner && banner.emptyContentFilter(val) ) {
+		if ( banner && this.options.adapter.isResponseEmpty(val) ) {
 			banner.write(val);
 		}
 
-	});
+	}, this));
 
 	// Set state for already loaded banners
-	$.each(banners, $.proxy(function ( index, banner ) {
-		if ( !banner.isLoaded && banner.alreadyLoadedFilter(banner.$el) ) {
-			banner.setAsLoaded();
-			banner.isLoaded = true;
-			banner.isContentEmpty = false;
-		}
-	}, this));
+	$.each(banners, function ( index, banner ) {
+		banner.resolveAlreadyLoadedState();
+	});
 
 	return banners;
 
@@ -670,15 +684,6 @@ Lazyads.prototype.defaults = {
 	 */
 	alreadyLoadedFilter: function ( $el ) {
 		return false;
-	},
-
-	/**
-	 * @param  {String}  content
-	 *
-	 * @return {Boolean}
-	 */
-	emptyContentFilter: function ( content ) {
-		return $.trim(content) === '';
 	},
 
 	classes: {
