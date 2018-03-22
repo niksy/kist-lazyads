@@ -93,29 +93,6 @@ By default, banners are considered not loaded until Lazyads is initialized. You 
 }
 ```
 
-#### emptyContentFilter
-
-Type: `Function`  
-Returns: `Boolean`
-
-By default, banner is considered empty if it returns (trimmed) empty string for its content. Filter can be used to set custom test for content emptyness. It should return `true` if content is empty.
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `content` | `String` | Banner content. |
-
-```js
-{
-	emptyContentFilter: function ( content ) {
-		return content.trim() === '';
-	}
-}
-```
-
-```html
-<div data-ad-id="ad1"></div>
-```
-
 #### classes
 
 Type: `Object`
@@ -230,9 +207,6 @@ var lazyads = new Lazyads({
 	},
 	alreadyLoadedFilter: function ( el ) {
 		return el.hasClass('is-loaded');
-	},
-	emptyContentFilter: function ( content ) {
-		return content.trim() === '';
 	}
 });
 

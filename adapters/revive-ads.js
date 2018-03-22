@@ -41,7 +41,7 @@ Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 	// we don't want to display it
-	if ( bannerCtx.emptyContentFilter(content) ) {
+	if ( this.isResponseEmpty(content) ) {
 		bannerCtx.$el.html(content);
 		successEmpty.call(bannerCtx, cb);
 		return;
@@ -84,4 +84,19 @@ Adapter.prototype.hasNecessaryInitData = function ( options ) {
 		return false;
 	}
 	return true;
+};
+
+/**
+ * Banner response is considered empty if it returns (trimmed) empty string for its content.
+ * It should return `true` if content is empty.
+ *
+ * @param  {Mixed} content
+ *
+ * @return {Boolean}
+ */
+Adapter.prototype.isResponseEmpty = function ( content ) {
+	if ( typeof content === 'string' ) {
+		return content.trim() === '' || /bannerid=0&amp;campaignid=0/.test(content);
+	}
+	return false;
 };
