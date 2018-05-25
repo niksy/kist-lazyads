@@ -38,7 +38,8 @@ module.exports = function ( grunt ) {
 				},
 				src: [
 					'<%= pkg.main %>',
-					'lib/**/*.js'
+					'lib/**/*.js',
+					'adapters/**/*.js'
 				]
 			}
 		},
@@ -109,7 +110,7 @@ module.exports = function ( grunt ) {
 				tasks: ['compile-handlebars:test']
 			},
 			browserify: {
-				files: ['<%= pkg.main %>', 'lib/**/*.js'],
+				files: ['<%= pkg.main %>', 'lib/**/*.js', 'adapters/**/*.js'],
 				tasks: ['browserify:standalone']
 			}
 		},
