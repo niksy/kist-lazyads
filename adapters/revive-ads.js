@@ -22,7 +22,9 @@ function successEmpty ( cb ) {
 	cb.call(null, this.$el);
 }
 
-var Adapter = module.exports = function () {};
+var Adapter = module.exports = function () {
+	this.content = window['OA_output'];
+};
 
 Adapter.prototype.onBannersInit = function ( banners ) {};
 Adapter.prototype.beforeBannersWrite = function ( banners ) {};
@@ -30,12 +32,12 @@ Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
  * @param  {Banner}   banner
- * @param  {String}   content
  * @param  {Function} cb
  */
-Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
+Adapter.prototype.writeBannerContent = function ( banner, cb ) {
 
 	var bannerCtx = banner;
+	var content = this.content[bannerCtx.name];
 	cb = cb || $.noop;
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
@@ -79,7 +81,7 @@ Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
  * @return {Boolean}
  */
 Adapter.prototype.hasNecessaryInitData = function ( options ) {
-	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
+	if ( $.isEmptyObject(options.context) ) {
 		return false;
 	}
 	return true;

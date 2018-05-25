@@ -22,6 +22,16 @@
 			window.resizeTo(data[0], data[1]);
 		});
 
+		window['OA_output'] = {
+			"floating": "floating",
+			"wallpaper-left": "wallpaper-left",
+			"wallpaper-right": "wallpaper-right",
+			"billboard": "billboard",
+			"mobile": "mobile",
+			"skyscraper": "skyscraper",
+			"empty-content": ""
+		};
+
 		var lazyads = new $.kist.Lazyads({
 			el: '[data-ad-id]',
 			context: {
@@ -31,15 +41,6 @@
 				"screen and (min-width:1200px) and (max-width:1499px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left"],
 				"screen and (min-width:728px) and (max-width:914px)": ["billboard","floating"],
 				"screen and (max-width:599px)": ["mobile"]
-			},
-			content: {
-				"floating": "floating",
-				"wallpaper-left": "wallpaper-left",
-				"wallpaper-right": "wallpaper-right",
-				"billboard": "billboard",
-				"mobile": "mobile",
-				"skyscraper": "skyscraper",
-				"empty-content": ""
 			}
 		});
 

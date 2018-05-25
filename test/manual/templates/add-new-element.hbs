@@ -33,6 +33,18 @@
 			lazyads.addPlaceholder($elEmptyContent);
 		});
 
+		window['OA_output'] = {
+			"floating": "floating",
+			"wallpaper-left": "wallpaper-left",
+			"wallpaper-right": "wallpaper-right",
+			"billboard": "billboard",
+			"mobile": "mobile",
+			"skyscraper": "skyscraper",
+			"new-ad": "new ad",
+			"empty-content": "",
+			"new-ad-empty-content": ""
+		};
+
 		var lazyads = new $.kist.Lazyads({
 			el: '[data-ad-id]',
 			context: {
@@ -42,17 +54,6 @@
 				"screen and (min-width:1200px) and (max-width:1499px)": ["billboard","skyscraper","floating","wallpaper-right","wallpaper-left", "new-ad", "new-ad-empty-content"],
 				"screen and (min-width:728px) and (max-width:914px)": ["billboard","floating"],
 				"screen and (max-width:599px)": ["mobile"]
-			},
-			content: {
-				"floating": "floating",
-				"wallpaper-left": "wallpaper-left",
-				"wallpaper-right": "wallpaper-right",
-				"billboard": "billboard",
-				"mobile": "mobile",
-				"skyscraper": "skyscraper",
-				"new-ad": "new ad",
-				"empty-content": "",
-				"new-ad-empty-content": ""
 			}
 		});
 

@@ -14,10 +14,11 @@
 			window.resizeTo(data[0], data[1]);
 		});
 
+		window['OA_output'] = {};
+
 		var lazyads = new $.kist.Lazyads({
 			el: '[data-ad-id]',
-			context: {},
-			content: {}
+			context: {}
 		});
 
 		lazyads

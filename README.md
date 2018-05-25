@@ -41,21 +41,6 @@ List of contexts and their ads.
 }
 ```
 
-#### content
-
-Type: `Object`
-
-Ad content which will be injected inside document elements defined by `el` and `contentIdDataProp` properties.
-
-```js
-{
-	"ad1": "<b>ad1 content</b>",
-	"ad2": "<span>ad2 content</span>",
-	"ad3": "ad3 content",
-	"ad4": "ad4 content"
-}
-```
-
 #### contentIdDataProp
 
 Type: `String`
@@ -178,13 +163,6 @@ var lazyads = new Lazyads({
 		'screen and (min-width:1200px) and (max-width:1499px)': ['ad1','ad2','ad3'],
 		'screen and (min-width:728px) and (max-width:914px)': ['ad1','ad3','ad5'],
 		'screen and (max-width:599px)': ['ad4']
-	},
-	content: {
-		'ad1': '<b>ad1 content</b>',
-		'ad2': '<span>ad2 content</span>',
-		'ad3': 'ad3 content',
-		'ad4': 'ad4 content'
-		'ad5': 'ad5 content'
 	}
 });
 
