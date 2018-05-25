@@ -1,4 +1,4 @@
-/*! kist-lazyads 0.8.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2018 | License: MIT */
+/*! kist-lazyads 0.9.0 - Simple ads manager. | Author: Ivan Nikolić <niksy5@gmail.com> (http://ivannikolic.com/), 2018 | License: MIT */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g=(g.jQuery||(g.jQuery = {}));g=(g.kist||(g.kist = {}));g.Lazyads = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefined" ? global['$'] : null);
@@ -20,13 +20,14 @@ function success ( cb ) {
  */
 function successEmpty ( cb ) {
 	this.setAsContentEmpty();
-	this.hide();
 	this.isLoaded = true;
 	this.isContentEmpty = true;
 	cb.call(null, this.$el);
 }
 
-var Adapter = module.exports = function () {};
+var Adapter = module.exports = function () {
+	this.content = window['OA_output'];
+};
 
 Adapter.prototype.onBannersInit = function ( banners ) {};
 Adapter.prototype.beforeBannersWrite = function ( banners ) {};
@@ -34,12 +35,12 @@ Adapter.prototype.afterBannersWrite = function ( banners ) {};
 
 /**
  * @param  {Banner}   banner
- * @param  {String}   content
  * @param  {Function} cb
  */
-Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
+Adapter.prototype.writeBannerContent = function ( banner, cb ) {
 
 	var bannerCtx = banner;
+	var content = this.content[bannerCtx.name];
 	cb = cb || $.noop;
 
 	// If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
@@ -83,7 +84,7 @@ Adapter.prototype.writeBannerContent = function ( banner, content, cb ) {
  * @return {Boolean}
  */
 Adapter.prototype.hasNecessaryInitData = function ( options ) {
-	if ( $.isEmptyObject(options.content) || $.isEmptyObject(options.context) ) {
+	if ( $.isEmptyObject(options.context) ) {
 		return false;
 	}
 	return true;
@@ -115,10 +116,9 @@ var $ = (typeof window !== "undefined" ? window['$'] : typeof global !== "undefi
  * @param  {String} name
  * @param  {jQuery} el
  * @param  {Object} classes
- * @param  {Function} alreadyLoadedFilter
  * @param  {Object} adapter
  */
-var Banner = module.exports = function ( name, el, classes, alreadyLoadedFilter, adapter ) {
+var Banner = module.exports = function ( name, el, classes, adapter ) {
 
 	if ( !name ) {
 		throw new Error('Ad name is not provided.');
@@ -134,10 +134,6 @@ var Banner = module.exports = function ( name, el, classes, alreadyLoadedFilter,
 	this.isContentEmpty = true;
 	this.stylesheets = [];
 	this.adapter = adapter;
-
-	this.alreadyLoadedFilter = function () {
-		return Boolean(alreadyLoadedFilter.apply(this.$el[0], arguments));
-	};
 
 	this.$el.addClass(this.classes.el);
 };
@@ -158,20 +154,11 @@ Banner.prototype.setAsContentEmpty = function () {
 	this.$el.addClass(this.classes.isContentEmpty);
 };
 
-Banner.prototype.resolveAlreadyLoadedState = function () {
-	if ( !this.isLoaded && this.alreadyLoadedFilter(this.$el) ) {
-		this.setAsLoaded();
-		this.isLoaded = true;
-		this.isContentEmpty = false;
-	}
-};
-
 /**
- * @param  {String}   content
  * @param  {Function} cb
  */
-Banner.prototype.write = function ( content, cb ) {
-	this.adapter.writeBannerContent(this, content, cb);
+Banner.prototype.write = function ( cb ) {
+	this.adapter.writeBannerContent(this, cb);
 };
 
 Banner.prototype.destroy = function () {
@@ -210,7 +197,6 @@ function getBannersFromContexts ( contexts ) {
 var Banners = module.exports = function ( el, options ) {
 
 	this.options = options;
-	this.content = options.content;
 	this.control = new Control();
 	this.list = getBannersFromContexts(options.context);
 
@@ -240,27 +226,8 @@ Banners.prototype.createBanners = function ( $el ) {
 	// Create Banner instances based on new banner elements
 	var banners = $.map($newEl, $.proxy(function ( el ) {
 		var $el = $(el);
-		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.alreadyLoadedFilter, this.options.adapter);
+		return new Banner($el.data(this.options.contentIdDataProp), $el, this.options.classes, this.options.adapter);
 	}, this));
-
-	// Initialize empty content banners
-	$.each(this.content, $.proxy(function ( name, val ) {
-
-		var banner = filter(banners, function ( banner ) {
-			return banner.name === name;
-		})[0];
-
-		// If banner element for that ad actually exists on page and has empty content
-		if ( banner && this.options.adapter.isResponseEmpty(val) ) {
-			banner.write(val);
-		}
-
-	}, this));
-
-	// Set state for already loaded banners
-	$.each(banners, function ( index, banner ) {
-		banner.resolveAlreadyLoadedState();
-	});
 
 	return banners;
 
@@ -273,35 +240,12 @@ Banners.prototype.createBanners = function ( $el ) {
  */
 Banners.prototype.add = function ( banners ) {
 
-	var contentEmptyList = [];
 	banners = banners || [];
 
-	// Get empty content banners
-	contentEmptyList = filter(banners, function ( banner ) {
-		return banner.isLoaded && banner.isContentEmpty;
-	});
-	contentEmptyList = $.map(contentEmptyList, function ( banner ) {
-		return banner.name;
-	});
-
 	this.banners = (this.banners || []).concat(banners);
-	this.contentEmptyList = (this.contentEmptyList || []).concat(contentEmptyList);
 
 	return banners;
 
-};
-
-/**
- * Get banners with non-empty content
- *
- * @param  {String[]} arr
- *
- * @return {String[]}
- */
-Banners.prototype.filterContentNonEmpty = function ( arr ) {
-	return filter(arr, $.proxy(function ( val ) {
-		return $.inArray(val, this.contentEmptyList) === -1;
-	}, this));
 };
 
 /**
@@ -333,7 +277,11 @@ Banners.prototype.show = function ( arr ) {
 	var banners = this.get(arr);
 
 	$.each(banners, $.proxy(function ( index, banner ) {
-		banner.show();
+		if ( banner.isContentEmpty ) {
+			banner.hide();
+		} else {
+			banner.show();
+		}
 		this.control.resolve(banner);
 	}, this));
 
@@ -359,16 +307,16 @@ Banners.prototype.hide = function ( arr ) {
 Banners.prototype.write = function ( arr ) {
 
 	var banners = this.get(arr, function ( banner ) {
-		return !banner.isLoaded && banner.isContentEmpty;
+		return !banner.isLoaded;
 	});
 
 	this.options.adapter.beforeBannersWrite(banners);
 
 	$.each(banners, $.proxy(function ( index, banner ) {
 
-		banner.write(this.content[banner.name], $.proxy(function () {
-			if ( banner.isLoaded && banner.isContentEmpty ) {
-				this.contentEmptyList.push(banner.name);
+		banner.write($.proxy(function () {
+			if ( banner.isContentEmpty ) {
+				this.hide([banner.name]);
 			} else {
 				this.show([banner.name]);
 			}
@@ -418,7 +366,7 @@ function listener ( mq ) {
 		this.calculate(this.banners.list);
 	}
 	if ( !isAnyContextActive(this.contexts) ) {
-		this.banners.hide(this.banners.filterContentNonEmpty(this.banners.list));
+		this.banners.hide(this.banners.list);
 	}
 }
 
@@ -490,13 +438,11 @@ Context.prototype.unlisten = function () {
  */
 Context.prototype.calculate = function ( rawList ) {
 
-	var nonEmpty = $.proxy(this.banners.filterContentNonEmpty, this.banners);
-
-	var allList = nonEmpty(this.banners.list);
-	var allVisibleBanners = nonEmpty(this.getVisibleBanners());
+	var allList = this.banners.list;
+	var allVisibleBanners = this.getVisibleBanners();
 	var allHiddenBanners = difference(allList, allVisibleBanners);
 
-	var list = nonEmpty(rawList);
+	var list = rawList;
 	var visibleBanners = intersection(allVisibleBanners, list);
 	var hiddenBanners = difference(list, visibleBanners);
 
@@ -673,18 +619,8 @@ var Lazyads = module.exports = function ( options ) {
 Lazyads.prototype.defaults = {
 	el: '[data-ad-id]',
 	context: {},
-	content: {},
 	contentIdDataProp: 'ad-id',
 	adapter: null,
-
-	/**
-	 * @param  {jQuery} $el
-	 *
-	 * @return {Boolean}
-	 */
-	alreadyLoadedFilter: function ( $el ) {
-		return false;
-	},
 
 	classes: {
 		el: meta.ns.htmlClass + '-item',
