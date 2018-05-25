@@ -74,25 +74,6 @@ This will inject `ad1` content inside element with `data-ad-id="ad1"`
 <div data-ad-id="ad1"></div>
 ```
 
-#### alreadyLoadedFilter
-
-Type: `Function`  
-Returns: `Boolean`
-
-By default, banners are considered not loaded until Lazyads is initialized. You may have some banners which already have some content before initialization (e.g. you may be using synchronous delivery for specific banners). Using this filter you can check for those banners and flag them as loaded at start.
-
-| Argument | Type | Description |
-| --- | --- | --- |
-| `el` | `jQuery` | Banner element. |
-
-```js
-{
-	alreadyLoadedFilter: function ( el ) {
-		return el.hasClass('is-loaded');
-	}
-}
-```
-
 #### classes
 
 Type: `Object`
@@ -204,9 +185,6 @@ var lazyads = new Lazyads({
 		'ad3': 'ad3 content',
 		'ad4': 'ad4 content'
 		'ad5': 'ad5 content'
-	},
-	alreadyLoadedFilter: function ( el ) {
-		return el.hasClass('is-loaded');
 	}
 });
 

@@ -17,7 +17,6 @@ function success ( cb ) {
  */
 function successEmpty ( cb ) {
 	this.setAsContentEmpty();
-	this.hide();
 	this.isLoaded = true;
 	this.isContentEmpty = true;
 	cb.call(null, this.$el);
