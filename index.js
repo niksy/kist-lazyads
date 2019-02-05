@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import meta from './lib/meta';
 import Banners from './lib/banners';
-import Context from './lib/context';
 import ContextResolver from './lib/context-resolver';
 
 class Lazyads {
@@ -10,16 +9,16 @@ class Lazyads {
 
 		const {
 			el = '[data-ad-id]',
-			context = {},
 			contentIdDataProp = 'ad-id',
+			context = [],
 			adapter = null,
 			classes = {}
 		} = options;
 
 		this.options = {
 			el,
-			context,
 			contentIdDataProp,
+			context,
 			adapter,
 			classes: {
 				el: `${meta.ns.htmlClass}-item`,
@@ -32,9 +31,7 @@ class Lazyads {
 
 		this.banners = new Banners(this.options.el, this.options);
 
-		this.contextResolver = new ContextResolver(this.banners, [
-			new Context(this.options.context)
-		]);
+		this.contextResolver = new ContextResolver(this.banners, this.options.context);
 
 	}
 
@@ -43,8 +40,7 @@ class Lazyads {
 	 *
 	 * @return {Lazyads}
 	 */
-	init ( cb ) {
-		cb = cb || $.noop;
+	init ( cb = () => {} ) {
 		this.active = true;
 		this.contextResolver.resolve();
 		cb.call(this.options);
@@ -65,9 +61,9 @@ class Lazyads {
 	 * @return {Lazyads}
 	 */
 	recheckControl () {
-		$.each(this.banners, $.proxy(function ( index, banner ) {
+		this.banners.forEach(( banner ) => {
 			this.banners.control.resolve(banner);
-		}, this));
+		});
 		return this;
 	}
 
@@ -77,11 +73,7 @@ class Lazyads {
 	 * @return {Lazyads}
 	 */
 	addPlaceholder ( el ) {
-		var banners, list;
-		banners = this.banners.add(this.banners.createBanners($(el)));
-		list = $.map(banners, function ( banner ) {
-			return banner.name;
-		});
+		this.banners.add(this.banners.createBanners($(el)));
 		this.contextResolver.resolve();
 		return this;
 	}

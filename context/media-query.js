@@ -1,7 +1,7 @@
 import intersection from 'mout/array/intersection';
 import difference from 'mout/array/difference';
 
-class Context {
+class MediaQueryContext {
 
 	/**
 	 * @param  {Object} contexts
@@ -109,4 +109,4 @@ class Context {
 
 }
 
-export default Context;
+export default MediaQueryContext;

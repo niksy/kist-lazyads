@@ -8,3 +8,5 @@ index.cjs.js
 index.esm.js
 adapters/revive-ads.cjs.js
 adapters/revive-ads.esm.js
+context/media-query.cjs.js
+context/media-query.esm.js

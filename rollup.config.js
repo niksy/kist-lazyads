@@ -36,4 +36,21 @@ module.exports = [{
 			exclude: 'node_modules/**'
 		})
 	]
+}, {
+	input: 'context/media-query.js',
+	output: [
+		{
+			file: 'context/media-query.cjs.js',
+			format: 'cjs'
+		},
+		{
+			file: 'context/media-query.esm.js',
+			format: 'esm'
+		}
+	],
+	plugins: [
+		babel({
+			exclude: 'node_modules/**'
+		})
+	]
 }];

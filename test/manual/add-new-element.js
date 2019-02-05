@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import Lazyads from '../../index';
 import ReviveAdsAdapter from '../../adapters/revive-ads';
+import MediaQueryContext from '../../context/media-query';
 import './index.css';
 
 window['OA_output'] = {
@@ -18,14 +19,16 @@ window['OA_output'] = {
 const lazyads = new Lazyads({
 	el: '[data-ad-id]',
 	adapter: new ReviveAdsAdapter(),
-	context: {
-		'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating', 'new-ad', 'new-ad-empty-content' ],
-		'screen and (min-width:1500px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'empty-content', 'new-ad', 'new-ad-empty-content' ],
-		'screen and (min-width:915px) and (max-width:999px)': [ 'billboard', 'skyscraper', 'floating', 'floating' ],
-		'screen and (min-width:1200px) and (max-width:1499px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'new-ad', 'new-ad-empty-content' ],
-		'screen and (min-width:728px) and (max-width:914px)': [ 'billboard', 'floating' ],
-		'screen and (max-width:599px)': ['mobile']
-	}
+	context: [
+		new MediaQueryContext({
+			'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating', 'new-ad', 'new-ad-empty-content' ],
+			'screen and (min-width:1500px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'empty-content', 'new-ad', 'new-ad-empty-content' ],
+			'screen and (min-width:915px) and (max-width:999px)': [ 'billboard', 'skyscraper', 'floating', 'floating' ],
+			'screen and (min-width:1200px) and (max-width:1499px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'new-ad', 'new-ad-empty-content' ],
+			'screen and (min-width:728px) and (max-width:914px)': [ 'billboard', 'floating' ],
+			'screen and (max-width:599px)': ['mobile']
+		})
+	]
 });
 
 $('.add-new-element').on('click', function () {
