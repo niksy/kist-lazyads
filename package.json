@@ -31,6 +31,7 @@
     "test:manual": "npm run test:generate-static-site:watch"
   },
   "dependencies": {
+    "element-within-viewport": "^1.1.1",
     "is-promise": "^2.1.0",
     "jquery": "^3.3.1",
     "mout": "^0.11.1",

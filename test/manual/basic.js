@@ -2,6 +2,7 @@ import $ from 'jquery';
 import Lazyads from '../../index';
 import ReviveAdsAdapter from '../../adapters/revive-ads';
 import MediaQueryContext from '../../context/media-query';
+import ViewportContext from '../../context/viewport';
 import './index.css';
 
 window['OA_output'] = {
@@ -11,7 +12,8 @@ window['OA_output'] = {
 	'billboard': 'billboard',
 	'mobile': 'mobile',
 	'skyscraper': 'skyscraper',
-	'empty-content': ''
+	'empty-content': '',
+	'in-viewport': 'in-viewport',
 };
 
 const lazyads = new Lazyads({
@@ -19,13 +21,14 @@ const lazyads = new Lazyads({
 	adapter: new ReviveAdsAdapter(),
 	context: [
 		new MediaQueryContext({
-			'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating' ],
-			'screen and (min-width:1500px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'empty-content' ],
-			'screen and (min-width:915px) and (max-width:999px)': [ 'billboard', 'skyscraper', 'floating', 'floating' ],
-			'screen and (min-width:1200px) and (max-width:1499px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left' ],
-			'screen and (min-width:728px) and (max-width:914px)': [ 'billboard', 'floating' ],
+			'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating', 'in-viewport' ],
+			'screen and (min-width:1500px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'empty-content', 'in-viewport' ],
+			'screen and (min-width:915px) and (max-width:999px)': [ 'billboard', 'skyscraper', 'floating', 'floating', 'in-viewport' ],
+			'screen and (min-width:1200px) and (max-width:1499px)': [ 'billboard', 'skyscraper', 'floating', 'wallpaper-right', 'wallpaper-left', 'in-viewport' ],
+			'screen and (min-width:728px) and (max-width:914px)': [ 'billboard', 'floating', 'in-viewport' ],
 			'screen and (max-width:599px)': ['mobile']
-		})
+		}),
+		new ViewportContext(['in-viewport']),
 	]
 });
 

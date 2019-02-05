@@ -1,3 +1,7 @@
+body {
+	min-height: 2000px;
+}
+
 .Banner {
 	width: 200px; height: 100px;
 	padding: 10px; margin: 10px;
@@ -6,5 +10,11 @@
 }
 
 .Banner.is-hidden {
-	display: none;
+	visibility: visible;
+	position: absolute;
+	opacity: 0;
+}
+
+.Banner--inViewport {
+	margin-top: 1500px;
 }
