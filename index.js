@@ -1,21 +1,16 @@
-var $ = require('jquery');
-var meta = require('./meta');
-var Banners = require('./banners');
-var Context = require('./context');
-var ReviveAdsAdapter = require('../adapters/revive-ads');
+import $ from 'jquery';
+import meta from './lib/meta';
+import Banners from './lib/banners';
+import Context from './lib/context';
 
 /**
  * @class
  *
  * @param  {Object} options
  */
-var Lazyads = module.exports = function ( options ) {
+function Lazyads ( options ) {
 
 	this.options = $.extend(true, {}, this.defaults, options);
-
-	if ( this.options.adapter === null ) {
-		this.options.adapter = new ReviveAdsAdapter();
-	}
 
 	if ( !this.options.adapter.hasNecessaryInitData(this.options) ) {
 		return this;
@@ -28,16 +23,15 @@ var Lazyads = module.exports = function ( options ) {
 	this.banners = new Banners(this.options.el, this.options);
 	this.context = new Context(this.banners, this.options.context);
 
-};
+}
 
 Lazyads.prototype.defaults = {
 	el: '[data-ad-id]',
 	context: {},
 	contentIdDataProp: 'ad-id',
 	adapter: null,
-
 	classes: {
-		el: meta.ns.htmlClass + '-item',
+		el: `${meta.ns.htmlClass}-item`,
 		isLoaded: 'is-loaded',
 		isHidden: 'is-hidden',
 		isContentEmpty: 'is-contentEmpty'
@@ -89,9 +83,10 @@ Lazyads.prototype.recheckControl = function () {
  * @return {Lazyads}
  */
 Lazyads.prototype.addPlaceholder = function ( el ) {
+	var banners, list;
 	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
-		var banners = this.banners.add(this.banners.createBanners($(el)));
-		var list = $.map(banners, function ( banner ) {
+		banners = this.banners.add(this.banners.createBanners($(el)));
+		list = $.map(banners, function ( banner ) {
 			return banner.name;
 		});
 		this.context.calculate(list);
@@ -112,3 +107,5 @@ Lazyads.prototype.destroy = function () {
 	}
 	return this;
 };
+
+export default Lazyads;

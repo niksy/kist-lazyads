@@ -1,0 +1,10 @@
+.Banner {
+	width: 200px; height: 100px;
+	padding: 10px; margin: 10px;
+	background: red;
+	color: white;
+}
+
+.Banner.is-hidden {
+	display: none;
+}
