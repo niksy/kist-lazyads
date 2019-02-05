@@ -2,6 +2,7 @@ import $ from 'jquery';
 import meta from './lib/meta';
 import Banners from './lib/banners';
 import Context from './lib/context';
+import ContextResolver from './lib/context-resolver';
 
 /**
  * @class
@@ -12,16 +13,11 @@ function Lazyads ( options ) {
 
 	this.options = $.extend(true, {}, this.defaults, options);
 
-	if ( !this.options.adapter.hasNecessaryInitData(this.options) ) {
-		return this;
-	}
-
-	if ( !('matchMedia' in global) ) {
-		$.error('window.matchMedia undefined.');
-	}
-
 	this.banners = new Banners(this.options.el, this.options);
-	this.context = new Context(this.banners, this.options.context);
+
+	this.contextResolver = new ContextResolver(this.banners, [
+		new Context(this.options.context)
+	]);
 
 }
 
@@ -45,11 +41,9 @@ Lazyads.prototype.defaults = {
  */
 Lazyads.prototype.init = function ( cb ) {
 	cb = cb || $.noop;
-	if ( this.options.adapter.hasNecessaryInitData(this.options) && !this.active ) {
-		this.active = true;
-		this.context.init();
-		cb.call(this.options);
-	}
+	this.active = true;
+	this.contextResolver.resolve();
+	cb.call(this.options);
 	return this;
 };
 
@@ -59,9 +53,7 @@ Lazyads.prototype.init = function ( cb ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.control = function ( props ) {
-	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
-		this.banners.control.add(props);
-	}
+	this.banners.control.add(props);
 	return this;
 };
 
@@ -69,11 +61,9 @@ Lazyads.prototype.control = function ( props ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.recheckControl = function () {
-	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
-		$.each(this.banners, $.proxy(function ( index, banner ) {
-			this.banners.control.resolve(banner);
-		}, this));
-	}
+	$.each(this.banners, $.proxy(function ( index, banner ) {
+		this.banners.control.resolve(banner);
+	}, this));
 	return this;
 };
 
@@ -84,13 +74,11 @@ Lazyads.prototype.recheckControl = function () {
  */
 Lazyads.prototype.addPlaceholder = function ( el ) {
 	var banners, list;
-	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
-		banners = this.banners.add(this.banners.createBanners($(el)));
-		list = $.map(banners, function ( banner ) {
-			return banner.name;
-		});
-		this.context.calculate(list);
-	}
+	banners = this.banners.add(this.banners.createBanners($(el)));
+	list = $.map(banners, function ( banner ) {
+		return banner.name;
+	});
+	this.contextResolver.resolve();
 	return this;
 };
 
@@ -98,13 +86,11 @@ Lazyads.prototype.addPlaceholder = function ( el ) {
  * @return {Lazyads}
  */
 Lazyads.prototype.destroy = function () {
-	if ( this.options.adapter.hasNecessaryInitData(this.options) ) {
-		this.banners.destroy();
-		this.context.destroy();
-		this.banners = null;
-		this.context = null;
-		this.active = false;
-	}
+	this.banners.destroy();
+	this.contextResolver.destroy();
+	this.banners = null;
+	this.contextResolver = null;
+	this.active = false;
 	return this;
 };
 
