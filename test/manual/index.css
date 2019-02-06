@@ -14,7 +14,3 @@ body {
 	position: absolute;
 	opacity: 0;
 }
-
-.Banner--inViewport {
-	margin-top: 1500px;
-}
