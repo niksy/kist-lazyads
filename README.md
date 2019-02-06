@@ -6,8 +6,6 @@ Simple ads manager. Provides async control with [Postscribe](https://github.com/
 
 ```sh
 npm install kist-lazyads --save
-
-bower install kist-lazyads --save
 ```
 
 ## API
@@ -26,20 +24,9 @@ Element which will contain ad content. String should be valid CSS selector.
 
 #### context
 
-Type: `Object`
+Type: `Array`
 
-List of contexts and their ads.
-
-```js
-{
-	"screen and (min-width:1000px) and (max-width:1199px)": ["ad1","ad2","ad3"],
-	"screen and (min-width:1500px)": ["ad1","ad2","ad3"],
-	"screen and (min-width:915px) and (max-width:999px)": ["ad1","ad2","ad3","ad3"],
-	"screen and (min-width:1200px) and (max-width:1499px)": ["ad1","ad2","ad3"],
-	"screen and (min-width:728px) and (max-width:914px)": ["ad1","ad3"],
-	"screen and (max-width:599px)": ["ad4"]
-}
-```
+List of contexts which will be used to resolve ads.
 
 #### contentIdDataProp
 
@@ -152,27 +139,32 @@ Destroys current Lazyads instance.
 ## Examples
 
 ```js
-var Lazyads = require('kist-lazyads');
+import Lazyads from 'kist-lazyads';
+import MediaQueryContext from 'kist-lazyads/context/media-query.esm';
+import ReviveAdsAdapter from 'kist-lazyads/adaptes/revive-ads.esm';
 
-var lazyads = new Lazyads({
+const lazyads = new Lazyads({
 	el: '.Banner',
-	context: {
-		'screen and (min-width:1000px) and (max-width:1199px)': ['ad1','ad2','ad3','ad5'],
-		'screen and (min-width:1500px)': ['ad1','ad2','ad3'],
-		'screen and (min-width:915px) and (max-width:999px)': ['ad1','ad2','ad3','ad3','ad5'],
-		'screen and (min-width:1200px) and (max-width:1499px)': ['ad1','ad2','ad3'],
-		'screen and (min-width:728px) and (max-width:914px)': ['ad1','ad3','ad5'],
-		'screen and (max-width:599px)': ['ad4']
-	}
+	adapter: new ReviveAdsAdapter(),
+	context: [
+		new MediaQueryContext({
+			'screen and (min-width:1000px) and (max-width:1199px)': ['ad1','ad2','ad3','ad5'],
+			'screen and (min-width:1500px)': ['ad1','ad2','ad3'],
+			'screen and (min-width:915px) and (max-width:999px)': ['ad1','ad2','ad3','ad3','ad5'],
+			'screen and (min-width:1200px) and (max-width:1499px)': ['ad1','ad2','ad3'],
+			'screen and (min-width:728px) and (max-width:914px)': ['ad1','ad3','ad5'],
+			'screen and (max-width:599px)': ['ad4']
+		})
+	]
 });
 
 lazyads
 	.control({
 		name: 'ad1',
-		condition: function ( el ) {
+		condition: ( el ) => {
 			return el.data('ad-id') === 'ad1';
 		},
-		callback: function ( el, emit, wait ) {
+		callback: ( el, emit, wait ) => {
 			if ( el.hasClass('is-loaded') ) {
 				if ( el.hasClass('is-hidden') ) {
 					console.log(1);
@@ -183,24 +175,24 @@ lazyads
 	})
 	.control({
 		name: 'ad4',
-		condition: function ( el ) {
+		condition: ( el ) => {
 			return el.data('ad-id') === 'ad4';
 		},
-		callback: function ( el, emit, wait ) {
+		callback: ( el, emit, wait ) => {
 			console.log(2);
 		}
 	})
-	.init(function () {
+	.init(() => {
 		console.log('Lazyads initialized!');
 	});
 
 lazyads.addPlaceholder($('<div clas="Banner" data-ad-id="ad5"></div>'));
 
-$('[data-ad-id="ad1"]').on('foo:ad1', function ( e, el ) {
+$('[data-ad-id="ad1"]').on('foo:ad1', ( e, el ) => {
 	console.log(arguments);
 });
 
-$(document).on('foo:ad1', function ( e, el ) {
+$(document).on('foo:ad1', ( e, el ) => {
 	console.log(e.currentTarget);
 	console.log(e.target);
 });
@@ -213,17 +205,9 @@ $(document).on('foo:ad1', function ( e, el ) {
 <data class="Banner" data-ad-id="ad4"></div>
 ```
 
-### AMD and global
-
-```js
-define(['kist-lazyads'], cb);
-
-window.$.kist.Lazyads;
-```
-
 ## Browser support
 
-Tested in IE8+ and all modern browsers.
+Tested in IE9+ and all modern browsers.
 
 ## License
 
