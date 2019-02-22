@@ -1,26 +1,6 @@
 import postscribe from 'postscribe';
 import meta from '../lib/meta';
 
-/**
- * @param  {Function} cb
- */
-function success ( cb ) {
-	this.setAsLoaded();
-	this.isLoaded = true;
-	this.isContentEmpty = false;
-	cb.call(null, this.el);
-}
-
-/**
- * @param  {Function} cb
- */
-function successEmpty ( cb ) {
-	this.setAsContentEmpty();
-	this.isLoaded = true;
-	this.isContentEmpty = true;
-	cb.call(null, this.el);
-}
-
 class ReviveAdsAdapter {
 
 	constructor () {
@@ -47,13 +27,19 @@ class ReviveAdsAdapter {
 		 */
 		if ( this.isResponseEmpty(content) ) {
 			bannerCtx.el.innerHTML = content;
-			successEmpty.call(bannerCtx, cb);
+			cb({
+				isContentEmpty: true
+			});
 			return;
 		}
 
 		bannerCtx.el.innerHTML = '';
 		postscribe(bannerCtx.el, content, {
-			done: success.bind(bannerCtx, cb)
+			done: () => {
+				cb({
+					isContentEmpty: false
+				});
+			}
 		});
 
 	}
