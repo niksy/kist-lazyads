@@ -4,19 +4,38 @@ import ReviveAdsAdapter from '../../adapters/revive-ads';
 import MediaQueryContext from '../../context/media-query';
 import './index.css';
 
-window['OA_output'] = {
-	'floating': 'floating',
-	'wallpaper-left': 'wallpaper-left',
-	'wallpaper-right': 'wallpaper-right',
-	'billboard': 'billboard',
-	'mobile': 'mobile',
-	'skyscraper': 'skyscraper',
-	'empty-content': ''
-};
-
 const lazyads = new Lazyads({
-	el: '[data-ad-id]',
-	adapter: new ReviveAdsAdapter(),
+	zones: [
+		{
+			element: document.querySelector('.Banner[data-ad-id="floating"]'),
+			zoneIdentifier: 'floating'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="wallpaper-left"]'),
+			zoneIdentifier: 'wallpaper-left'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="wallpaper-right"]'),
+			zoneIdentifier: 'wallpaper-right'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="billboard"]'),
+			zoneIdentifier: 'billboard'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="mobile"]'),
+			zoneIdentifier: 'mobile'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="skyscraper"]'),
+			zoneIdentifier: 'skyscraper'
+		},
+		{
+			element: document.querySelector('.Banner[data-ad-id="empty-content"]'),
+			zoneIdentifier: 'empty-content'
+		}
+	],
+	service: new ReviveAdsAdapter(),
 	context: [
 		new MediaQueryContext({
 			'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating' ],
@@ -29,62 +48,57 @@ const lazyads = new Lazyads({
 	]
 });
 
-lazyads
-	.control({
-		name: 'billboard',
-		condition: function ( el ) {
-			return el.data('ad-id') === 'billboard';
-		},
-		callback: function ( el, emit ) {
-			if ( el.hasClass('is-loaded') ) {
-				if ( el.hasClass('is-hidden') ) {
-					console.log('billboard, loaded, hidden');
-					emit('foo');
-				}
+lazyads.addControl({
+	name: 'billboard',
+	condition: function ( el ) {
+		return el.getAttribute('data-ad-id') === 'billboard';
+	},
+	callback: function ( el ) {
+		el = $(el);
+		if ( el.hasClass('is-loaded') ) {
+			if ( el.hasClass('is-hidden') ) {
+				console.log('billboard, loaded, hidden');
 			}
 		}
-	})
-	.control({
-		name: 'skyscraper',
-		condition: function ( el ) {
-			return el.data('ad-id') === 'skyscraper';
-		},
-		callback: function ( el, emit ) {
-			if ( el.hasClass('is-loaded') ) {
-				if ( el.hasClass('is-hidden') ) {
-					console.log('skyscraper, loaded, hidden');
-				}
-			}
-		}
-	})
-	.control({
-		name: 'mobile',
-		condition: function ( el ) {
-			return el.data('ad-id') === 'mobile';
-		},
-		callback: function ( el, emit, wait ) {
-			console.log('mobile');
-		}
-	})
-	.control({
-		name: 'empty-content',
-		condition: function ( el ) {
-			return el.data('ad-id') === 'empty-content';
-		},
-		callback: function ( el, emit, wait ) {
-			console.log('empty-content');
-		}
-	})
-	.init(function () {
-		console.log('Lazyads initialized!');
-		console.log(this);
-	});
-
-$('[data-ad-id="billboard"]').on('foo:billboard', function ( e, el ) {
-	console.log(arguments);
+	}
 });
 
-$(document).on('foo:billboard', function ( e, el ) {
-	console.log(e.currentTarget);
-	console.log(e.target);
+lazyads.addControl({
+	name: 'skyscraper',
+	condition: function ( el ) {
+		return el.getAttribute('data-ad-id') === 'skyscraper';
+	},
+	callback: function ( el ) {
+		el = $(el);
+		if ( el.hasClass('is-loaded') ) {
+			if ( el.hasClass('is-hidden') ) {
+				console.log('skyscraper, loaded, hidden');
+			}
+		}
+	}
+});
+
+lazyads.addControl({
+	name: 'mobile',
+	condition: function ( el ) {
+		return el.getAttribute('data-ad-id') === 'mobile';
+	},
+	callback: function ( el ) {
+		console.log('mobile');
+	}
+});
+
+lazyads.addControl({
+	name: 'empty-content',
+	condition: function ( el ) {
+		return el.getAttribute('data-ad-id') === 'empty-content';
+	},
+	callback: function ( el ) {
+		console.log('empty-content');
+	}
+});
+
+lazyads.start(function () {
+	console.log('Lazyads initialized!');
+	console.log(this);
 });

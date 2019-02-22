@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import postscribe from 'postscribe';
 import meta from '../lib/meta';
 
@@ -9,7 +8,7 @@ function success ( cb ) {
 	this.setAsLoaded();
 	this.isLoaded = true;
 	this.isContentEmpty = false;
-	cb.call(null, this.$el);
+	cb.call(null, this.el);
 }
 
 /**
@@ -19,7 +18,7 @@ function successEmpty ( cb ) {
 	this.setAsContentEmpty();
 	this.isLoaded = true;
 	this.isContentEmpty = true;
-	cb.call(null, this.$el);
+	cb.call(null, this.el);
 }
 
 class ReviveAdsAdapter {
@@ -40,40 +39,21 @@ class ReviveAdsAdapter {
 
 		var bannerCtx = banner;
 		var content = this.content[bannerCtx.name];
-		cb = cb || $.noop;
+		cb = cb || (() => {});
 
 		/*
 		 * If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
 		 * we don't want to display it
 		 */
 		if ( this.isResponseEmpty(content) ) {
-			bannerCtx.$el.html(content);
+			bannerCtx.el.innerHTML = content;
 			successEmpty.call(bannerCtx, cb);
 			return;
 		}
 
-		/*
-		 * If ad content doesn't need postscribe parse (and won't benefit from
-		 * it's modifications), just dump it to the page
-		 */
-		if ( /responsive_google_ad/.test(content) ) {
-			bannerCtx.$el.html(content);
-			success.call(bannerCtx, cb);
-			return;
-		}
-
-		// If ad content has external stylesheets, append them for IE 8
-		if ( content.match(/link.+href/) && (document.all && !document.addEventListener) ) {
-			$(content).filter('link').each($.proxy(function ( index, link ) {
-				var $stylesheet = $(`<link rel="stylesheet" href="${$(link).attr('href')}" class="${meta.ns.htmlClass}-ieStyle" />`);
-				$stylesheet.appendTo('head');
-				bannerCtx.stylesheets.push($stylesheet);
-			}, bannerCtx));
-		}
-
-		bannerCtx.$el.empty();
-		postscribe(bannerCtx.$el, content, {
-			done: $.proxy(success, bannerCtx, cb)
+		bannerCtx.el.innerHTML = '';
+		postscribe(bannerCtx.el, content, {
+			done: success.bind(bannerCtx, cb)
 		});
 
 	}
