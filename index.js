@@ -1,6 +1,7 @@
 import meta from './lib/meta';
 import Banners from './lib/banners';
 import ContextResolver from './lib/context-resolver';
+import Control from './lib/control';
 
 class Lazyads {
 
@@ -89,3 +90,5 @@ class Lazyads {
 }
 
 export default Lazyads;
+
+export { Control };

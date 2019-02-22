@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import Lazyads from '../../index';
+import Lazyads, { Control } from '../../index';
 import ReviveAdsAdapter from '../../adapters/revive-ads';
 import MediaQueryContext from '../../context/media-query';
 import './index.css';
@@ -48,55 +48,52 @@ const lazyads = new Lazyads({
 	]
 });
 
-lazyads.addControl({
-	name: 'billboard',
-	condition: function ( el ) {
-		return el.getAttribute('data-ad-id') === 'billboard';
-	},
-	callback: function ( el ) {
-		el = $(el);
-		if ( el.hasClass('is-loaded') ) {
-			if ( el.hasClass('is-hidden') ) {
-				console.log('billboard, loaded, hidden');
-			}
-		}
+class WallpaperControl extends Control {
+	shouldTriggerControl ({ element }) {
+		return Promise.resolve(element.getAttribute('data-ad-id') === 'billboard');
 	}
-});
-
-lazyads.addControl({
-	name: 'skyscraper',
-	condition: function ( el ) {
-		return el.getAttribute('data-ad-id') === 'skyscraper';
-	},
-	callback: function ( el ) {
-		el = $(el);
-		if ( el.hasClass('is-loaded') ) {
-			if ( el.hasClass('is-hidden') ) {
-				console.log('skyscraper, loaded, hidden');
-			}
-		}
+	onHide ({ element }) {
+		console.log('billboard, loaded, hidden');
 	}
-});
+}
 
-lazyads.addControl({
-	name: 'mobile',
-	condition: function ( el ) {
-		return el.getAttribute('data-ad-id') === 'mobile';
-	},
-	callback: function ( el ) {
+class SkyscraperControl extends Control {
+	shouldTriggerControl ({ element }) {
+		return Promise.resolve(element.getAttribute('data-ad-id') === 'skyscraper');
+	}
+	onHide ({ element }) {
+		console.log('skyscraper, loaded, hidden');
+	}
+}
+
+class MobileControl extends Control {
+	shouldTriggerControl ({ element }) {
+		return Promise.resolve(element.getAttribute('data-ad-id') === 'mobile');
+	}
+	onShow ({ element }) {
 		console.log('mobile');
 	}
-});
+	onHide ({ element }) {
+		console.log('mobile');
+	}
+}
 
-lazyads.addControl({
-	name: 'empty-content',
-	condition: function ( el ) {
-		return el.getAttribute('data-ad-id') === 'empty-content';
-	},
-	callback: function ( el ) {
+class EmptyContentControl extends Control {
+	shouldTriggerControl ({ element }) {
+		return Promise.resolve(element.getAttribute('data-ad-id') === 'empty-content');
+	}
+	onShow ({ element }) {
 		console.log('empty-content');
 	}
-});
+	onHide ({ element }) {
+		console.log('empty-content');
+	}
+}
+
+lazyads.addControl(new WallpaperControl());
+lazyads.addControl(new SkyscraperControl());
+lazyads.addControl(new MobileControl());
+lazyads.addControl(new EmptyContentControl());
 
 lazyads.start(function () {
 	console.log('Lazyads initialized!');
