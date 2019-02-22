@@ -14,6 +14,9 @@ class ClassesControl extends Control {
 			element.classList.add(this.classes.isHidden);
 		});
 	}
+	shouldTriggerControl () {
+		return Promise.resolve(true);
+	}
 	onShow ({ element, isContentEmpty }) {
 		if ( isContentEmpty ) {
 			element.classList.add(this.classes.isContentEmpty);
