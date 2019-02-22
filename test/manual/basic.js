@@ -4,6 +4,50 @@ import ReviveAdsAdapter from '../../adapters/revive-ads';
 import MediaQueryContext from '../../context/media-query';
 import './index.css';
 
+class ClassesControl extends Control {
+	constructor ( elements, classes ) {
+		super(elements);
+		this.elements = [].slice.call(elements);
+		this.classes = classes;
+		this.elements.forEach(( element ) => {
+			element.classList.add(this.classes.item);
+			element.classList.add(this.classes.isHidden);
+		});
+	}
+	onShow ({ element, isContentEmpty }) {
+		if ( isContentEmpty ) {
+			element.classList.add(this.classes.isContentEmpty);
+		} else {
+			element.classList.add(this.classes.isLoaded);
+		}
+		element.classList.remove(this.classes.isHidden);
+	}
+	onHide ({ element, isContentEmpty }) {
+		if ( isContentEmpty ) {
+			element.classList.add(this.classes.isContentEmpty);
+		} else {
+			element.classList.add(this.classes.isLoaded);
+		}
+		element.classList.add(this.classes.isHidden);
+	}
+	onDestroy () {
+		[
+			this.classes.item,
+			this.classes.isHidden,
+			this.classes.isLoaded,
+			this.classes.isContentEmpty
+		]
+			.join(' ')
+			.split(' ')
+			.filter(( str ) => str.trim() !== '')
+			.forEach(( className ) => {
+				this.elements.forEach(( element ) => {
+					element.classList.remove(className);
+				});
+			});
+	}
+}
+
 const lazyads = new Lazyads({
 	zones: [
 		{
@@ -36,6 +80,14 @@ const lazyads = new Lazyads({
 		}
 	],
 	service: new ReviveAdsAdapter(),
+	control: [
+		new ClassesControl(document.querySelectorAll('.Banner[data-ad-id]'), {
+			item: 'kist-Lazyads-item',
+			isHidden: 'is-hidden',
+			isLoaded: 'is-loaded',
+			isContentEmpty: 'is-contentEmpty'
+		})
+	],
 	context: [
 		new MediaQueryContext({
 			'screen and (min-width:1000px) and (max-width:1199px)': [ 'billboard', 'skyscraper', 'floating' ],

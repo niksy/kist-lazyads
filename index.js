@@ -31,6 +31,10 @@ class Lazyads {
 
 		this.banners = new Banners(this.options.zones, this.options);
 
+		control.forEach(( entry ) => {
+			this.banners.control.add(entry);
+		});
+
 		this.contextResolver = new ContextResolver(this.banners, this.options.context);
 
 	}
@@ -47,21 +51,21 @@ class Lazyads {
 	}
 
 	/**
-	 * @param  {Object} props
-	 *
-	 * @return {Lazyads}
-	 */
-	addControl ( props ) {
-		this.banners.control.add(props);
-	}
-
-	/**
 	 * @return {Lazyads}
 	 */
 	update () {
 		this.banners.forEach(( banner ) => {
 			this.banners.control.resolve(banner);
 		});
+	}
+
+	/**
+	 * @param  {Object} props
+	 *
+	 * @return {Lazyads}
+	 */
+	addControl ( props ) {
+		this.banners.control.add(props);
 	}
 
 	/**
