@@ -29,14 +29,14 @@ class Lazyads {
 	 * @param  {Control} control
 	 */
 	addControl ( control ) {
-		this.controlResolver.add(control);
+		this.controlResolver.addControl(control);
 	}
 
 	/**
 	 * @param  {Context} context
 	 */
 	addContext ( context ) {
-		this.contextResolver.add(context);
+		this.contextResolver.addContext(context);
 	}
 
 	/**
