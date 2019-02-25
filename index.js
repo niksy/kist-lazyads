@@ -1,5 +1,5 @@
-import meta from './lib/meta';
 import Banners from './lib/banners';
+import ControlResolver from './lib/control-resolver';
 import ContextResolver from './lib/context-resolver';
 import Control from './lib/control';
 
@@ -11,31 +11,13 @@ class Lazyads {
 			zones = [],
 			service = null,
 			control = [],
-			context = [],
-			classes = {}
+			context = []
 		} = options;
 
-		this.options = {
-			zones,
-			service,
-			control,
-			context,
-			classes: {
-				el: `${meta.ns.htmlClass}-item`,
-				isLoaded: 'is-loaded',
-				isHidden: 'is-hidden',
-				isContentEmpty: 'is-contentEmpty',
-				...classes
-			}
-		};
-
-		this.banners = new Banners(this.options.zones, this.options);
-
-		control.forEach(( entry ) => {
-			this.banners.control.add(entry);
-		});
-
-		this.contextResolver = new ContextResolver(this.banners, this.options.context);
+		this.service = service;
+		this.controlResolver = new ControlResolver(control);
+		this.banners = new Banners(zones, this.controlResolver, this.service);
+		this.contextResolver = new ContextResolver(this.banners, context);
 
 	}
 
@@ -47,7 +29,7 @@ class Lazyads {
 	 * @param  {Control} control
 	 */
 	addControl ( control ) {
-		this.banners.control.add(control);
+		this.controlResolver.add(control);
 	}
 
 	/**

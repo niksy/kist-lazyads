@@ -1,5 +1,4 @@
 import postscribe from 'postscribe';
-import meta from '../lib/meta';
 
 class ReviveAdsAdapter {
 
