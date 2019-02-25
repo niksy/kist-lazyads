@@ -45,7 +45,7 @@ class Lazyads {
 	 * @param {String} zone.id
 	 */
 	addZone ({ element, id }) {
-		this.zones.add([{ element, id }]);
+		this.zones.add({ element, id });
 		this.service.afterNewZoneRegistered({ element, id });
 	}
 
