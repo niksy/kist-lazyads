@@ -7,6 +7,7 @@ class MediaQueryContext {
 	 * @param  {Object} contexts
 	 */
 	constructor ( contexts ) {
+		this.resolveAllContexts = null;
 		this.contexts = this.transformContexts(contexts);
 		this.listen();
 	}
@@ -104,7 +105,10 @@ class MediaQueryContext {
 	}
 
 	resolve () {
-
+		if ( typeof this.resolveAllContexts !== 'function' ) {
+			return;
+		}
+		this.resolveAllContexts();
 	}
 
 }

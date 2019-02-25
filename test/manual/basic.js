@@ -150,7 +150,4 @@ lazyads.addControl(new SkyscraperControl());
 lazyads.addControl(new MobileControl());
 lazyads.addControl(new EmptyContentControl());
 
-lazyads.start(function () {
-	console.log('Lazyads initialized!');
-	console.log(this);
-});
+lazyads.run();

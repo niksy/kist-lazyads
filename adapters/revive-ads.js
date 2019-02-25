@@ -7,39 +7,36 @@ class ReviveAdsAdapter {
 		this.content = window.OA_output;
 	}
 
-	onBannersInit ( banners ) {}
-	beforeBannersWrite ( banners ) {}
-	afterBannersWrite ( banners ) {}
+	afterZonesSetup ( banners ) {}
+	beforeZonesWrite ( banners ) {}
+	afterZonesWrite ( banners ) {}
 
 	/**
 	 * @param  {Banner}   banner
-	 * @param  {Function} cb
 	 */
-	writeBannerContent ( banner, cb ) {
+	writeZone ({ element, zoneIdentifier }) {
 
-		var bannerCtx = banner;
-		var content = this.content[bannerCtx.name];
-		cb = cb || (() => {});
+		return new Promise(( resolve, reject ) => {
 
-		/*
-		 * If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
-		 * we don't want to display it
-		 */
-		if ( this.isResponseEmpty(content) ) {
-			bannerCtx.el.innerHTML = content;
-			cb({
-				isContentEmpty: true
-			});
-			return;
-		}
+			var content = this.content[zoneIdentifier];
 
-		bannerCtx.el.innerHTML = '';
-		postscribe(bannerCtx.el, content, {
-			done: () => {
-				cb({
-					isContentEmpty: false
-				});
+			/*
+			 * If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
+			 * we don't want to display it
+			 */
+			if ( this.isResponseEmpty(content) ) {
+				element.innerHTML = content;
+				resolve(false);
+				return;
 			}
+
+			element.innerHTML = '';
+			postscribe(element, content, {
+				done: () => {
+					resolve(true);
+				}
+			});
+
 		});
 
 	}

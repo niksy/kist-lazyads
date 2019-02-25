@@ -39,56 +39,43 @@ class Lazyads {
 
 	}
 
-	/**
-	 * @param  {Function} cb
-	 *
-	 * @return {Lazyads}
-	 */
-	start ( cb = () => {} ) {
-		this.active = true;
+	run () {
 		this.contextResolver.resolve();
-		cb.call(this.options);
 	}
 
 	/**
-	 * @return {Lazyads}
+	 * @param  {Control} control
 	 */
-	update () {
-		this.banners.forEach(( banner ) => {
-			this.banners.control.resolve(banner);
-		});
+	addControl ( control ) {
+		this.banners.control.add(control);
 	}
 
 	/**
-	 * @param  {Object} props
-	 *
-	 * @return {Lazyads}
+	 * @param  {Context} context
 	 */
-	addControl ( props ) {
-		this.banners.control.add(props);
+	addContext ( context ) {
+		this.contextResolver.add(context);
 	}
 
 	/**
-	 * @param {Object} placeholder
-	 * @param {Element} placeholder.element
-	 * @param {String} placeholder.zoneIdentifier
-	 *
-	 * @return {Lazyads}
+	 * @param {Object} zone
+	 * @param {Element} zone.element
+	 * @param {String} zone.zoneIdentifier
 	 */
-	addPlaceholder ({ element, zoneIdentifier }) {
+	addZone ({ element, zoneIdentifier }) {
 		this.banners.add(this.banners.createBanners(element, zoneIdentifier));
+		this.options.service.afterNewZoneRegistered({ element, zoneIdentifier });
+	}
+
+	update () {
 		this.contextResolver.resolve();
 	}
 
-	/**
-	 * @return {Lazyads}
-	 */
-	 destroy () {
+	destroy () {
 		this.banners.destroy();
 		this.contextResolver.destroy();
 		this.banners = null;
 		this.contextResolver = null;
-		this.active = false;
 	}
 
 }
