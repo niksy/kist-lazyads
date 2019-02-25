@@ -7,6 +7,9 @@ import Service from './lib/service';
 
 class Lazyads {
 
+	/**
+	 * @param  {Object} options
+	 */
 	constructor ( options = {} ) {
 
 		const {
