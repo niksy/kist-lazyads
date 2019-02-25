@@ -6,13 +6,10 @@ class ReviveAdsAdapter {
 		this.content = window.OA_output;
 	}
 
-	afterZonesSetup ( banners ) {}
-	beforeZonesWrite ( banners ) {}
-	afterZonesWrite ( banners ) {}
+	afterZonesSetup ( zones ) {}
+	beforeZonesWrite ( zones ) {}
+	afterZonesWrite ( zones ) {}
 
-	/**
-	 * @param  {Banner}   banner
-	 */
 	writeZone ({ element, id }) {
 
 		return new Promise(( resolve, reject ) => {
@@ -41,7 +38,7 @@ class ReviveAdsAdapter {
 	}
 
 	/**
-	 * Banner response is considered empty if it returns (trimmed) empty string for its content.
+	 * Response is considered empty if it returns (trimmed) empty string for its content.
 	 * It should return `true` if content is empty.
 	 *
 	 * @param  {Mixed} content

@@ -1,4 +1,4 @@
-import Banners from './lib/banners';
+import Zones from './lib/zones';
 import ControlResolver from './lib/control-resolver';
 import ContextResolver from './lib/context-resolver';
 import Control from './lib/control';
@@ -16,8 +16,8 @@ class Lazyads {
 
 		this.service = service;
 		this.controlResolver = new ControlResolver(control);
-		this.banners = new Banners(zones, this.controlResolver, this.service);
-		this.contextResolver = new ContextResolver(this.banners, context);
+		this.zones = new Zones(zones, this.controlResolver, this.service);
+		this.contextResolver = new ContextResolver(this.zones, context);
 
 	}
 
@@ -45,8 +45,8 @@ class Lazyads {
 	 * @param {String} zone.id
 	 */
 	addZone ({ element, id }) {
-		this.banners.add(this.banners.createBanners(element, id));
-		this.options.service.afterNewZoneRegistered({ element, id });
+		this.zones.add([{ element, id }]);
+		this.service.afterNewZoneRegistered({ element, id });
 	}
 
 	update () {
@@ -54,10 +54,10 @@ class Lazyads {
 	}
 
 	destroy () {
-		this.banners.destroy();
+		this.service.destroy();
+		this.controlResolver.destroy();
+		this.zones.destroy();
 		this.contextResolver.destroy();
-		this.banners = null;
-		this.contextResolver = null;
 	}
 
 }

@@ -20,13 +20,13 @@ class MediaQueryContext {
 	transformContexts ( contexts ) {
 
 		return Object.entries(contexts)
-			.reduce(( obj, [ mq, banners ]) => {
+			.reduce(( obj, [ mq, zones ]) => {
 				return {
 					...obj,
 					[mq]: {
 						context: mq,
 						mq: window.matchMedia(mq),
-						banners: banners
+						zones: zones
 					}
 				};
 			}, {});
@@ -65,21 +65,21 @@ class MediaQueryContext {
 	}
 
 	/**
-	 * @param  {String[]} bannersList
+	 * @param  {String[]} zonesList
 	 */
-	calculate ( bannersList ) {
+	calculate ( zonesList ) {
 
-		const allList = bannersList;
-		const allVisibleBanners = this.getVisibleBanners();
-		const allHiddenBanners = difference(allList, allVisibleBanners);
+		const allList = zonesList;
+		const allVisibleZones = this.getVisibleZones();
+		const allHiddenZones = difference(allList, allVisibleZones);
 
-		const list = bannersList;
-		const visibleBanners = intersection(allVisibleBanners, list);
-		const hiddenBanners = difference(list, visibleBanners);
+		const list = zonesList;
+		const visibleZones = intersection(allVisibleZones, list);
+		const hiddenZones = difference(list, visibleZones);
 
 		return {
-			hide: hiddenBanners,
-			show: visibleBanners
+			hide: hiddenZones,
+			show: visibleZones
 		};
 
 	}
@@ -87,12 +87,12 @@ class MediaQueryContext {
 	/**
 	 * @return {String[]}
 	 */
-	getVisibleBanners () {
+	getVisibleZones () {
 
 		return Object.entries(this.contexts)
 			.reduce(( arr, [ name, context ]) => {
 				if ( context.mq.matches ) {
-					return [...arr, ...context.banners];
+					return [...arr, ...context.zones];
 				}
 				return arr;
 			}, []);
