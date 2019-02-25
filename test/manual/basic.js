@@ -17,7 +17,7 @@ class ClassesControl extends Control {
 	shouldTriggerControl () {
 		return Promise.resolve(true);
 	}
-	onShow ({ element, isContentEmpty }) {
+	onZoneShow ({ element, isContentEmpty }) {
 		if ( isContentEmpty ) {
 			element.classList.add(this.classes.isContentEmpty);
 		} else {
@@ -25,7 +25,7 @@ class ClassesControl extends Control {
 		}
 		element.classList.remove(this.classes.isHidden);
 	}
-	onHide ({ element, isContentEmpty }) {
+	onZoneHide ({ element, isContentEmpty }) {
 		if ( isContentEmpty ) {
 			element.classList.add(this.classes.isContentEmpty);
 		} else {
@@ -33,7 +33,7 @@ class ClassesControl extends Control {
 		}
 		element.classList.add(this.classes.isHidden);
 	}
-	onDestroy () {
+	destroy () {
 		[
 			this.classes.item,
 			this.classes.isHidden,
@@ -107,7 +107,7 @@ class WallpaperControl extends Control {
 	shouldTriggerControl ({ element }) {
 		return Promise.resolve(element.getAttribute('data-ad-id') === 'billboard');
 	}
-	onHide ({ element }) {
+	onZoneHide ({ element }) {
 		console.log('billboard, loaded, hidden');
 	}
 }
@@ -116,7 +116,7 @@ class SkyscraperControl extends Control {
 	shouldTriggerControl ({ element }) {
 		return Promise.resolve(element.getAttribute('data-ad-id') === 'skyscraper');
 	}
-	onHide ({ element }) {
+	onZoneHide ({ element }) {
 		console.log('skyscraper, loaded, hidden');
 	}
 }
@@ -125,10 +125,10 @@ class MobileControl extends Control {
 	shouldTriggerControl ({ element }) {
 		return Promise.resolve(element.getAttribute('data-ad-id') === 'mobile');
 	}
-	onShow ({ element }) {
+	onZoneShow ({ element }) {
 		console.log('mobile');
 	}
-	onHide ({ element }) {
+	onZoneHide ({ element }) {
 		console.log('mobile');
 	}
 }
@@ -137,10 +137,10 @@ class EmptyContentControl extends Control {
 	shouldTriggerControl ({ element }) {
 		return Promise.resolve(element.getAttribute('data-ad-id') === 'empty-content');
 	}
-	onShow ({ element }) {
+	onZoneShow ({ element }) {
 		console.log('empty-content');
 	}
-	onHide ({ element }) {
+	onZoneHide ({ element }) {
 		console.log('empty-content');
 	}
 }
