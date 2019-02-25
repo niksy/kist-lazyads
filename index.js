@@ -5,7 +5,7 @@ import Control from './lib/control';
 import Context from './lib/context';
 import Service from './lib/service';
 
-class Lazyads {
+class Advertol {
 
 	/**
 	 * @param  {Object} options
@@ -67,7 +67,7 @@ class Lazyads {
 
 }
 
-export default Lazyads;
+export default Advertol;
 
 export {
 	Control,
