@@ -55,31 +55,31 @@ const lazyads = new Lazyads({
 	zones: [
 		{
 			element: document.querySelector('.Banner[data-ad-id="floating"]'),
-			zoneIdentifier: 'floating'
+			id: 'floating'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="wallpaper-left"]'),
-			zoneIdentifier: 'wallpaper-left'
+			id: 'wallpaper-left'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="wallpaper-right"]'),
-			zoneIdentifier: 'wallpaper-right'
+			id: 'wallpaper-right'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="billboard"]'),
-			zoneIdentifier: 'billboard'
+			id: 'billboard'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="mobile"]'),
-			zoneIdentifier: 'mobile'
+			id: 'mobile'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="skyscraper"]'),
-			zoneIdentifier: 'skyscraper'
+			id: 'skyscraper'
 		},
 		{
 			element: document.querySelector('.Banner[data-ad-id="empty-content"]'),
-			zoneIdentifier: 'empty-content'
+			id: 'empty-content'
 		}
 	],
 	service: new ReviveAdsAdapter(),

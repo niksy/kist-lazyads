@@ -60,11 +60,11 @@ class Lazyads {
 	/**
 	 * @param {Object} zone
 	 * @param {Element} zone.element
-	 * @param {String} zone.zoneIdentifier
+	 * @param {String} zone.id
 	 */
-	addZone ({ element, zoneIdentifier }) {
-		this.banners.add(this.banners.createBanners(element, zoneIdentifier));
-		this.options.service.afterNewZoneRegistered({ element, zoneIdentifier });
+	addZone ({ element, id }) {
+		this.banners.add(this.banners.createBanners(element, id));
+		this.options.service.afterNewZoneRegistered({ element, id });
 	}
 
 	update () {

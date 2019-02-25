@@ -14,11 +14,11 @@ class ReviveAdsAdapter {
 	/**
 	 * @param  {Banner}   banner
 	 */
-	writeZone ({ element, zoneIdentifier }) {
+	writeZone ({ element, id }) {
 
 		return new Promise(( resolve, reject ) => {
 
-			var content = this.content[zoneIdentifier];
+			var content = this.content[id];
 
 			/*
 			 * If ad content is empty (or doesn’t exist, e.g. ad blocker is active),
