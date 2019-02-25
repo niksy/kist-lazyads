@@ -2,6 +2,8 @@ import Zones from './lib/zones';
 import ControlResolver from './lib/control-resolver';
 import ContextResolver from './lib/context-resolver';
 import Control from './lib/control';
+import Context from './lib/context';
+import Service from './lib/service';
 
 class Lazyads {
 
@@ -64,4 +66,8 @@ class Lazyads {
 
 export default Lazyads;
 
-export { Control };
+export {
+	Control,
+	Context,
+	Service
+};
