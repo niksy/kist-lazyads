@@ -1,3 +1,11 @@
+![Deprecated project](https://img.shields.io/badge/status-deprecated-red.svg)
+
+**This project is deprecated.**
+
+Use [advertol](https://github.com/niksy/advertol).
+
+---
+
 # kist-lazyads
 
 Simple ads manager. Provides async control with [Postscribe](https://github.com/krux/postscribe).
